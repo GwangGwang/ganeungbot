@@ -1,16 +1,29 @@
 package telegram
 
 import (
-	"fmt"
+	"io/ioutil"
 	"log"
+	"strings"
 	"time"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
-func init() {
-	fmt.Println("can i see this?")
-	bot, err := tgbotapi.NewBotAPI("MyAwesomeBotToken")
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
+const tokenDir string = "/secrets/telegram"
+
+// InitBot starts a bot
+func InitBot() {
+	data, err := ioutil.ReadFile(tokenDir)
+	check(err)
+	token := strings.TrimSpace(string(data))
+
+	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		log.Panic(err)
 	}
