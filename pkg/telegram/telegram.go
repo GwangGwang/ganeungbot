@@ -2,47 +2,51 @@ package telegram
 
 import (
 	"log"
-	"strconv"
 
 	"github.com/GwangGwang/ganeungbot/pkg/util"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
-const tokenDir string = "/secrets/telegram"
-const consoleChatIDDir string = "/secrets/telegram-consoleChatId"
+// Telegram is the service layer to Telegram chat
+type Telegram struct {
+	Token          string
+	ConsoleChatID  int64
+	UpdateChannel  tgbotapi.UpdatesChannel
+	SendChannel    chan string
+	ConsoleChannel chan string
+}
 
-// InitBot starts a bot
-func InitBot(console chan string) {
-	// TODO: move to util
-	token := util.FileRead(tokenDir)
-	chatIDStr := util.FileRead(consoleChatIDDir)
-	consoleChatID, err := strconv.ParseInt(chatIDStr, 10, 64)
-	util.Check(err)
+// Start initiates chat
+func (t *Telegram) Start() {
 
-	bot, err := tgbotapi.NewBotAPI(token)
+	bot, err := tgbotapi.NewBotAPI(t.Token)
 	if err != nil {
 		log.Panic(err)
 	}
 
 	//bot.Debug = true
-
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, err := bot.GetUpdatesChan(u)
+	t.UpdateChannel, err = bot.GetUpdatesChan(u)
+	t.SendChannel = make(chan string)
 
-	for {
-		select {
-		case consoleMsg := <-console:
-			msg := tgbotapi.NewMessage(consoleChatID, consoleMsg)
+	go func() {
+		for consoleUpdate := range t.ConsoleChannel {
+			msg := tgbotapi.NewMessage(t.ConsoleChatID, consoleUpdate)
 			sendThenLog(bot, &msg)
-		case update := <-updates:
-			if update.Message == nil {
-				continue
-			}
 		}
+		// reaches here when channel closed
+	}()
+
+	for update := range t.UpdateChannel {
+		if update.Message == nil {
+			continue
+		}
+		msg := tgbotapi.NewMessage(t.ConsoleChatID, update.Message.Text)
+		sendThenLog(bot, &msg)
 	}
 
 	//	for update := range updates {
