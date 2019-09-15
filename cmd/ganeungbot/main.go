@@ -5,8 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/GwangGwang/ganeungbot/pkg/chat"
-	"github.com/GwangGwang/ganeungbot/pkg/telegram"
+	"github.com/GwangGwang/ganeungbot/pkg/mid"
 	"github.com/GwangGwang/ganeungbot/pkg/util"
 )
 
@@ -18,18 +17,19 @@ func main() {
 	log.Printf("Ganeungbot started on %d", startTime)
 
 	// Read config
+	// TODO: move to internal
 	token := util.FileRead(tokenDir)
 	chatIDStr := util.FileRead(consoleChatIDDir)
 	consoleChatID, err := strconv.ParseInt(chatIDStr, 10, 64)
 	util.Check(err)
 
-	// Uses generic chat interface so that supporting another msg service is trivial
-	consoleChan := chat.StartConsole()
-	var chatObj chat.Chat
-	chatObj = &telegram.Telegram{
-		Token:          token,
-		ConsoleChatID:  consoleChatID,
-		ConsoleChannel: consoleChan,
+	receiveChan, sendChan, err := telegram.New(token)
+	if err != nil {
+		log.Panic(err)
+		return
 	}
-	chatObj.Start()
+	consoleChan := mid.StartConsole()
+
+	mid.Init(receiveChan, sendChan, consoleChan)
+
 }
