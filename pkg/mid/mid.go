@@ -1,30 +1,57 @@
 // mid is the middlelayer for processing received msgs and preparing replies
 package mid
 
+import (
+	"log"
+
+	"github.com/GwangGwang/ganeungbot/pkg/util"
+
+
+)
+
+type Middleware struct {
+	BotStartTime int64
+	ConsoleChatID int64
+	ReceiveChan chan Msg
+	SendChan chan Msg
+}
+
 // Msg is the received/sending message
 type Msg struct {
 	Timestamp int64
-	ChatID    string
+	ChatID    int64
 	Username  string
 	Content string
 }
 
-// Init initializes the middlelayer for processing msgs received and to send
-func Init(receiveChan chan mid.Msg, sendChan chan mid.Msg, consoleChan chan mid.Msg) {
-	go startConsole(sendChan)
+// Start initializes the middlelayer for processing msgs received and to send
+func (m *Middleware) Start() {
+	// Console for sending msgs via terminal
+	go startConsole(m.SendChan, m.ConsoleChatID)
 
-}
+	//var chats Chats = make(map[int64]Chat)
 
+	for msg := range m.ReceiveChan {
+		// Initialize new chat object if never seen before
+	//	if chat, exists := chats[msg.ChatID]; !exists {
+	//		chat = Chat{
+	//			IsShutup: false,
+	//		}
+	//	}
 
-	go func() {
-
-	}()
-	for update := range t.UpdateChannel {
-		if update.Message == nil {
+		if msg.Content == "" {
 			continue
 		}
-		msg := tgbotapi.NewMessage(t.ConsoleChatID, update.Message.Text)
-		sendThenLog(bot, &msg)
+
+		if msg.Timestamp < m.BotStartTime {
+			log.Printf("Not processing msg due to before bot start time")
+			continue
+		}
+
+		util.PrintChatLog(msg.ChatID, 0, msg.Username, msg.Content)
+	}
+	//	msg := tgbotapi.NewMessage(t.ConsoleChatID, update.Message.Text)
+	//	sendThenLog(bot, &msg)
 	}
 
 	//	for update := range updates {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/GwangGwang/ganeungbot/pkg/mid"
 	"github.com/GwangGwang/ganeungbot/pkg/util"
+	"github.com/GwangGwang/ganeungbot/pkg/telegram"
 )
 
 const tokenDir string = "/secrets/telegram"
@@ -28,8 +29,12 @@ func main() {
 		log.Panic(err)
 		return
 	}
-	consoleChan := mid.StartConsole()
+	midware := mid.Middleware{
+		BotStartTime: startTime,
+		ConsoleChatID: consoleChatID,
+		ReceiveChan: receiveChan,
+		SendChan: sendChan,
+	}
 
-	mid.Init(receiveChan, sendChan, consoleChan)
-
+	midware.Start()
 }

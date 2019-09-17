@@ -29,15 +29,16 @@ func New(token string) (chan mid.Msg, chan mid.Msg, error) {
 	// Need to reformat Telegram-specific msg structure to our own
 	go func() {
 		for raw := range rawReceiveChan {
+log.Printf("%+v\n", raw)
 			formattedMsg := mid.Msg{
-				Timestamp : int64(raw.Date),
-				Username: raw.From.UserName,
-				ChatID: raw.Chat.ID,
-				Content: raw.Text,
+				Timestamp : int64(raw.Message.Date),
+				Username: raw.Message.From.UserName,
+				ChatID: raw.Message.Chat.ID,
+				Content: raw.Message.Text,
 			}
 			receiveChan <- formattedMsg
 		}
-	}
+	}()
 
 	sendChan := make(chan mid.Msg)
 	go listenOutgoing(api, sendChan)

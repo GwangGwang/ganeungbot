@@ -8,7 +8,7 @@ import (
 )
 
 // startConsole instantiates console and returns the channel it'd receive inputs
-func startConsole(sendChan chan mid.Msg, consoleChatID int64) {
+func startConsole(sendChan chan Msg, consoleChatID int64) {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	go func() {
@@ -27,6 +27,4 @@ func startConsole(sendChan chan mid.Msg, consoleChatID int64) {
 			}
 		}
 	}()
-
-	return ch
 }
