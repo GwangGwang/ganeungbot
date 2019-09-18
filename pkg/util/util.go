@@ -3,8 +3,10 @@ package util
 import (
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
+	"time"
 )
 
 // Exit terminates the program
@@ -30,4 +32,10 @@ func FileRead(filename string) string {
 // PrintChatLog prints received chat update
 func PrintChatLog(chatID int64, msgID int, username string, text string) {
 	log.Printf("ChatID:%d | MsgID: %d | %s | %s", chatID, msgID, username, text)
+}
+
+// GetRandomElement returns a random element from the given list
+func GetRandomElement(arr []string) string {
+	rand.Seed(time.Now().Unix()) // TODO: should be called only once
+	return arr[rand.Intn(len(arr))]
 }

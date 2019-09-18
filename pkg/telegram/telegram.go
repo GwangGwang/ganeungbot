@@ -29,12 +29,17 @@ func New(token string) (chan mid.Msg, chan mid.Msg, error) {
 	// Need to reformat Telegram-specific msg structure to our own
 	go func() {
 		for raw := range rawReceiveChan {
-log.Printf("%+v\n", raw)
+
+			// TODO: why NPE?
+			if raw.Message == nil {
+				continue
+			}
+			log.Printf("%+v\n", raw)
 			formattedMsg := mid.Msg{
-				Timestamp : int64(raw.Message.Date),
-				Username: raw.Message.From.UserName,
-				ChatID: raw.Message.Chat.ID,
-				Content: raw.Message.Text,
+				Timestamp: int64(raw.Message.Date),
+				Username:  raw.Message.From.UserName,
+				ChatID:    raw.Message.Chat.ID,
+				Content:   raw.Message.Text,
 			}
 			receiveChan <- formattedMsg
 		}
