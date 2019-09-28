@@ -23,10 +23,14 @@ func Check(e error) {
 }
 
 // FileRead reads file into string
-func FileRead(filename string) string {
+func FileReadString(filename string) (string, error) {
 	data, err := ioutil.ReadFile(filename)
-	Check(err)
-	return strings.TrimSpace(string(data))
+
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(string(data)), nil
 }
 
 // PrintChatLog prints received chat update
