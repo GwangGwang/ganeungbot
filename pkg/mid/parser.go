@@ -33,8 +33,6 @@ func scanForActions(txt string) []Action {
 			}
 
 		}
-
 	}
-
 	return actions
 }

@@ -1,34 +1,21 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/GwangGwang/ganeungbot/pkg/util"
 )
 
-const TelegramAPIKey string = "telegram"
-const TelegramConsoleChatID string = "telegram-console"
-const WeatherAPIKey string = "weatherAPIkey"
+const secretDir string = "/secrets"
 
-// Map of config name to location
-var configInfos map[string]string {
-	TelegramAPIKey: "/secrets/telegram",
-	TelegramConsoleChatID: "/secrets/telegram-consoleChatId",
-	WeatherAPIKey: "/secrets/weatherAPIKey",
-}
+// Get returns the config with the given name
+func Get(name string) (string, error) {
 
-type ConfigMap map[string]string
-
-func Get() ConfigMap {
-	var configMap ConfigMap = make(map[string]string)
-
-	for name, location := range configInfos {
-		value, err := util.FileReadString(location)
-
-		if err != nil {
-			log.Printf("Config \"%s\" not found at \"%s\"\n", name, location)
-		}
-
-		configMap[name] = value
+	configDir := fmt.Sprintf("%s/%s", secretDir, name)
+	value, err := util.FileReadString(configDir)
+	if err != nil {
+		return "", fmt.Errorf("config '%s' not found at '%s'", name, configDir)
 	}
 
-	return configMap
+	return value, nil
 }

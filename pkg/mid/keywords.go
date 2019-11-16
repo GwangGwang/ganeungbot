@@ -80,7 +80,7 @@ var Commands = []struct {
 		Behavior: ACTION_UNSHUTUP},
 	{Keywords: []string{".+ vs .+"},
 		Behavior: ACTION_VERSUS},
-	{Keywords: []string{"날씨$"},
+	{Keywords: []string{"날씨$", "weather$", "forecast$"},
 		Behavior: ACTION_WEATHER},
 	{Keywords: []string{"^월드컵"},
 		Behavior: ACTION_WORLDCUP},
@@ -149,4 +149,3 @@ var Answers = map[Action][]string{
 		"I have returned",
 	},
 }
-
