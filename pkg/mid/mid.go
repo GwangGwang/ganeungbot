@@ -1,6 +1,7 @@
 package mid
 
 import (
+	"github.com/GwangGwang/ganeungbot/pkg/typehelper"
 	"log"
 	"strconv"
 	"strings"
@@ -127,7 +128,7 @@ func (m *Middleware) prepareResponse(username string, txt string) string {
 }
 
 func (m *Middleware) buildResponse(action Action, username string, txt string) string {
-	var resp string = ""
+	var resp = ""
 	var err error
 
 	if answerList, ok := Answers[action]; ok {
@@ -137,6 +138,8 @@ func (m *Middleware) buildResponse(action Action, username string, txt string) s
 		log.Printf("%+v\n", util.GetRandomElement(strings.Split(txt, "vs")))
 	} else {
 		switch action {
+		case ACTION_TYPEHELPER:
+			resp = typehelper.GetResponse(strings.Split(txt, typehelper.Trigger)[1])
 		case ACTION_WEATHER:
 			// TODO: send in user's location or user's info so that we can fetch default location per user?
 			resp, err = m.Weather.GetResponse(username, txt)

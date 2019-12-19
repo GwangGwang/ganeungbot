@@ -1,5 +1,10 @@
 package mid
 
+import (
+	"fmt"
+	"github.com/GwangGwang/ganeungbot/pkg/typehelper"
+)
+
 type Action int
 
 const (
@@ -10,6 +15,7 @@ const (
 	ACTION_GOODBYE
 	ACTION_GREETINGS
 	ACTION_INJUNG
+	ACTION_TYPEHELPER
 	ACTION_SHUTUP
 	ACTION_UNSHUTUP
 	ACTION_VERSUS
@@ -23,6 +29,9 @@ var Commands = []struct {
 	Keywords []string
 	Behavior Action
 }{
+	{Keywords: []string{
+		fmt.Sprintf("^%s", typehelper.Trigger)},
+		Behavior: ACTION_TYPEHELPER},
 	{Keywords: []string{
 		"able\\?$",
 		"possible\\?$",
@@ -91,7 +100,7 @@ var Commands = []struct {
 }
 
 var Answers = map[Action][]string{
-	ACTION_ABLE: []string{
+	ACTION_ABLE: {
 		"ㄱㄱㄱ",
 		"ㄲ!!!",
 		"ㄱㄱㅆ",
@@ -103,7 +112,7 @@ var Answers = map[Action][]string{
 		"ㅈ ㅏ ㅈ ㅔ",
 		"매우 불가능",
 	},
-	ACTION_GREETINGS: []string{
+	ACTION_GREETINGS: {
 		"Hello",
 		"Hi",
 		"ㅎㅇ",
@@ -115,7 +124,7 @@ var Answers = map[Action][]string{
 		"헬로",
 		"곤니찌와",
 	},
-	ACTION_GOODBYE: []string{
+	ACTION_GOODBYE: {
 		"Bye~",
 		"ㅂ2",
 		"ㅂㅇ",
@@ -126,13 +135,13 @@ var Answers = map[Action][]string{
 		"아디오스!",
 		"잘가요..",
 	},
-	ACTION_INJUNG: []string{
+	ACTION_INJUNG: {
 		"ㅇㅈ",
 		"ㄴㄴ",
 		"인정",
 		"매우 인정",
 	},
-	ACTION_SHUTUP: []string{
+	ACTION_SHUTUP: {
 		"당신이 원하신다면.. 흑 ㅠㅠ",
 		"잘 있어요",
 		"사요나라!",
@@ -140,7 +149,7 @@ var Answers = map[Action][]string{
 		"네 ㅠㅠㅠㅠ",
 		"알았다 꺼져주지",
 	},
-	ACTION_UNSHUTUP: []string{
+	ACTION_UNSHUTUP: {
 		"내가 돌아왔다!",
 		"살았다 꺄르륵!",
 		"보고싶었어요",
