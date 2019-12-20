@@ -8,7 +8,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/GwangGwang/ganeungbot/internal/pkg/config"
 	darksky "github.com/twpayne/go-darksky"
 )
 
@@ -24,25 +23,21 @@ const weatherAPIKey = "weatherAPIKey"
 const geocodingAPIKey = "geocodingAPIKey"
 
 // New initializes and returns a new weather pkg instance
-func New() (Instance, error) {
+func New(weatherApiKey string, geocodingApiKey string) (Instance, error) {
 	log.Println("Initializing weather pkg")
 
 	w := Instance{}
 
-	weatherAPIKey, err := config.Get(weatherAPIKey)
-	if err != nil {
-		log.Printf("WARN: weather API key not found: %s", err.Error())
+	if len(weatherApiKey) == 0 {
+		log.Printf("WARN: weather API key not found")
 		w.Operational = false
 	}
-	geocodingAPIKey, err := config.Get(geocodingAPIKey)
-	if err != nil {
-		log.Printf("WARN: geocoding API key not found: %s", err.Error())
+	if len(geocodingApiKey) == 0 {
+		log.Printf("WARN: geocoding API key not found")
 		w.Operational = false
 	}
 
 	w.Operational = true
-	w.WeatherAPIKey = weatherAPIKey
-	w.GeocodingAPIKey = geocodingAPIKey
 
 	return w, nil
 }

@@ -29,7 +29,7 @@ func main() {
 	startTime := time.Now().Unix() - 3600
 	log.Printf("Ganeungbot started on %d", startTime)
 
-	var envs map[string]string
+	envs := make(map[string]string)
 	for _, envName := range envNames {
 		envs[envName] = os.Getenv(envName)
 	}
