@@ -139,7 +139,7 @@ func (m *Middleware) buildResponse(action Action, username string, txt string) s
 	} else {
 		switch action {
 		case ACTION_TYPEHELPER:
-			resp = typehelper.GetResponse(strings.Split(txt, typehelper.Trigger)[1])
+			resp = typehelper.GetResponse(username, strings.Split(txt, typehelper.Trigger)[1])
 		case ACTION_WEATHER:
 			// TODO: send in user's location or user's info so that we can fetch default location per user?
 			resp, err = m.Weather.GetResponse(username, txt)
