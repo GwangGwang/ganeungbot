@@ -66,6 +66,12 @@ func (m *Middleware) process() {
 
 		for _, response := range responses {
 			if len(response) > 0 {
+
+				// DEBUG LINE
+				//if msg.ChatID == -170492567 {
+				//	continue
+				//}
+				//
 				m.SendChan <- Msg{
 					ChatID:   msg.ChatID,
 					Content:  response,

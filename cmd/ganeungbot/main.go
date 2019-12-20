@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -34,6 +35,10 @@ func main() {
 		envs[envName] = os.Getenv(envName)
 	}
 
+	if len(envs[TelegramApiKey]) == 0 {
+		panic(fmt.Sprintf("telegram api key not supplied under env '%s'", TelegramApiKey))
+	}
+
 	// Telegram API
 	receiveChan, sendChan, err := telegram.New(envs[TelegramApiKey])
 	if err != nil {
@@ -41,15 +46,16 @@ func main() {
 		return
 	}
 
+	// Telegram Console
+	consoleChatId, err := strconv.ParseInt(envs[TelegramConsoleChatId], 10, 64)
+	if err != nil {
+		log.Printf("Error while converting consoleChatId to int64: %s", err.Error())
+	}
+
 	// Weather API
 	w, err := weather.New(envs[WeatherApiKey], envs[GeocodingApiKey])
 	if err != nil {
 		log.Println(err)
-	}
-
-	consoleChatId, err := strconv.ParseInt(envs[TelegramConsoleChatId], 10, 64)
-	if err != nil {
-		log.Printf("Error while converting consoleChatId to int64: %s", err.Error())
 	}
 
 	middleware := mid.Middleware{
