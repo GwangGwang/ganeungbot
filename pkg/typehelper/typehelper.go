@@ -26,10 +26,10 @@ func indexOf(element string, data []string) int {
 }
 
 
-func GetResponse(username string, txt string) string {
+func GetResponse(txt string) string {
 	// parse out time/location keywords and process any time offsets
 	resp := engTypeToKor(txt)
-	return fmt.Sprintf("%s: %s", username, resp)
+	return resp
 }
 
 

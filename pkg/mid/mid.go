@@ -1,11 +1,12 @@
 package mid
 
 import (
-	"github.com/GwangGwang/ganeungbot/pkg/typehelper"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
+	"github.com/GwangGwang/ganeungbot/pkg/typehelper"
 	"github.com/GwangGwang/ganeungbot/internal/pkg/config"
 	"github.com/GwangGwang/ganeungbot/pkg/util"
 	"github.com/GwangGwang/ganeungbot/pkg/weather"
@@ -102,50 +103,58 @@ func (m *Middleware) process() {
 		util.PrintChatLog(msg.ChatID, 0, msg.Username, msg.Content)
 
 		// Generate response based on msg text content
-		responseTxt := m.prepareResponse(msg.Username, msg.Content)
+		responses := m.prepareResponse(msg.Username, msg.Content)
 
-		if len(responseTxt) > 0 {
-			m.SendChan <- Msg{
-				ChatID:   msg.ChatID,
-				Content:  responseTxt,
-				Username: "Ganeungbot",
+		for _, response := range responses {
+			if len(response) > 0 {
+				m.SendChan <- Msg{
+					ChatID:   msg.ChatID,
+					Content:  response,
+					Username: "Ganeungbot",
+				}
 			}
 		}
 	}
 }
 
 // TODO: come up with a better function name
-func (m *Middleware) prepareResponse(username string, txt string) string {
+func (m *Middleware) prepareResponse(username string, txt string) []string {
 	parseResult := Parse(txt)
 	//log.Printf("%+v\n", parseResult)
 
-	var response string
+	responses := []string{}
 	if len(parseResult.Actions) > 0 {
-		response = m.buildResponse(parseResult.Actions[0], username, txt)
+		responses = m.buildResponse(parseResult.Actions[0], username, txt)
 	}
 
-	return response
+	return responses
 }
 
-func (m *Middleware) buildResponse(action Action, username string, txt string) string {
-	var resp = ""
-	var err error
+func (m *Middleware) buildResponse(action Action, username string, txt string) []string {
+	resps := []string{}
 
 	if answerList, ok := Answers[action]; ok {
-		resp = util.GetRandomElement(answerList)
+		resps = append(resps, util.GetRandomElement(answerList))
 	} else if action == ACTION_VERSUS {
-		resp = util.GetRandomElement(strings.Split(txt, "vs"))
+		resps = append(resps, util.GetRandomElement(strings.Split(txt, "vs")))
 		log.Printf("%+v\n", util.GetRandomElement(strings.Split(txt, "vs")))
 	} else {
 		switch action {
 		case ACTION_TYPEHELPER:
-			resp = typehelper.GetResponse(username, strings.Split(txt, typehelper.Trigger)[1])
+			typehelpedMsg := typehelper.GetResponse(strings.Split(txt, typehelper.Trigger)[1])
+			resps = append(resps, fmt.Sprintf("%s: %s", username, typehelpedMsg))
+
+			// use the translated message for response generation
+			resps = append(resps, m.prepareResponse(username, typehelpedMsg)...)
+
 		case ACTION_WEATHER:
 			// TODO: send in user's location or user's info so that we can fetch default location per user?
-			resp, err = m.Weather.GetResponse(username, txt)
+			resp, err := m.Weather.GetResponse(username, txt)
 			if err != nil {
 				log.Printf(err.Error())
-				resp = err.Error()
+				resps = append(resps, err.Error())
+			} else {
+				resps = append(resps, resp)
 			}
 		//	case ACTION_GAMESTATS:
 		//		resp = chatObj.lolStats.GetResponse(txt)
@@ -155,5 +164,5 @@ func (m *Middleware) buildResponse(action Action, username string, txt string) s
 	}
 
 	//fmt.Printf("%+v\n", resp)
-	return resp
+	return resps
 }
