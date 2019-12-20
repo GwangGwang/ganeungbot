@@ -2,10 +2,8 @@ package mid
 
 import (
 	"log"
-	"strconv"
 	"strings"
 
-	"github.com/GwangGwang/ganeungbot/internal/pkg/config"
 	"github.com/GwangGwang/ganeungbot/pkg/util"
 	"github.com/GwangGwang/ganeungbot/pkg/weather"
 )
@@ -27,26 +25,6 @@ type Msg struct {
 	Content   string
 }
 
-const consoleChatIDdir = "consoleChatID"
-
-// New initializes and returns a new middleware instance
-func New(startTime int64, receiveChan chan Msg, sendChan chan Msg, w weather.Instance) Middleware {
-	log.Println("Initializing middleware")
-
-	consoleChatID, err := readConfig()
-	if err != nil || consoleChatID == 0 {
-		log.Printf("Problem when fetching console chat id: %s", err.Error())
-	}
-
-	return Middleware{
-		BotStartTime:  startTime,
-		ReceiveChan:   receiveChan,
-		SendChan:      sendChan,
-		ConsoleChatID: consoleChatID,
-		Weather:       w,
-	}
-}
-
 // Start initializes the middlelayer for processing msgs received and to send
 func (m *Middleware) Start() {
 	if m.ConsoleChatID != 0 {
@@ -56,24 +34,6 @@ func (m *Middleware) Start() {
 
 	//var chats Chats = make(map[int64]Chat)
 	m.process()
-}
-
-func readConfig() (int64, error) {
-	var consoleChatID int64 = 0
-	consoleChatIDStr, err := config.Get(consoleChatIDdir)
-	if err != nil {
-		return 0, err
-	} else {
-		log.Printf("Console Chat ID found: %s", consoleChatIDStr)
-		consoleChatID, err = strconv.ParseInt(consoleChatIDStr, 10, 64)
-		if err != nil {
-			return 0, err
-		} else {
-			log.Printf("Successful parsing of chat ID to int64")
-		}
-	}
-
-	return consoleChatID, nil
 }
 
 func (m *Middleware) process() {

@@ -1,28 +1,24 @@
 package telegram
 
 import (
+	"fmt"
 	"log"
 
-	"github.com/GwangGwang/ganeungbot/internal/pkg/config"
 	"github.com/GwangGwang/ganeungbot/pkg/mid"
 	"github.com/GwangGwang/ganeungbot/pkg/util"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
-const telegramAPIKey string = "telegramAPIKey"
-
 // New instantiates a Telegram client and returns two channels, for receiving/sending
-func New() (chan mid.Msg, chan mid.Msg, error) {
+func New(apiKey string) (chan mid.Msg, chan mid.Msg, error) {
 	log.Println("Initializing telegram pkg")
 
-	// Get API Key
-	telegramAPIKey, err := config.Get(telegramAPIKey)
-	if err != nil {
-		return nil, nil, err
+	if len(apiKey) == 0 {
+		return nil, nil, fmt.Errorf("no telegram api key supplied")
 	}
 
 	// Start bot api
-	api, err := tgbotapi.NewBotAPI(telegramAPIKey)
+	api, err := tgbotapi.NewBotAPI(apiKey)
 	if err != nil {
 		return nil, nil, err
 	}
