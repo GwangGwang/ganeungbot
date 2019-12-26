@@ -15,7 +15,7 @@ type Middleware struct {
 	ConsoleChatID int64
 	ReceiveChan   chan Msg
 	SendChan      chan Msg
-	Weather       weather.Instance
+	Weather       weather.Weather
 }
 
 // Msg is the received/sending message

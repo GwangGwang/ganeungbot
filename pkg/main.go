@@ -2,18 +2,19 @@ package main
 
 import (
 	"fmt"
+	"github.com/GwangGwang/ganeungbot/pkg/geocoding"
 
-	"github.com/GwangGwang/ganeungbot/pkg/weather"
 )
 
 func main() {
 	fmt.Println("test")
 
-	w, _ := weather.New()
+	w, _ := geocoding.New("AIzaSyDmwAG0JTlIcZO0nFo6Tu7mQQwIZuhDiQQ")
 
-	ll, _ := w.GetGPS("vancouver")
+	ll, str, _ := w.GetGPS("toronto")
 
-	fmt.Printf("%+v", ll)
+	fmt.Printf("location: %+v", ll)
+	fmt.Printf("formatted: %s", str)
 
 	//	fmt.Printf("results: %+v\n", results)
 	//

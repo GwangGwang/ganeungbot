@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/GwangGwang/ganeungbot/pkg/geocoding"
 	"log"
+	"os"
 	"strconv"
 	"time"
-	"os"
 
 	"github.com/GwangGwang/ganeungbot/pkg/mid"
 	"github.com/GwangGwang/ganeungbot/pkg/telegram"
@@ -52,8 +53,14 @@ func main() {
 		log.Printf("Error while converting consoleChatId to int64: %s", err.Error())
 	}
 
+	// Google Geocoding API
+	geocoding, err := geocoding.New(envs[GeocodingApiKey])
+	if err != nil {
+		log.Printf("Error while initializing geocoding pkg: %s", err.Error())
+	}
+
 	// Weather API
-	w, err := weather.New(envs[WeatherApiKey], envs[GeocodingApiKey])
+	w, err := weather.New(envs[WeatherApiKey], geocoding)
 	if err != nil {
 		log.Println(err)
 	}

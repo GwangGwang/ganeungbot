@@ -299,26 +299,3 @@ func parseSemantic(tokens []token, curHour int64) (tokenType, int64, error) {
 	return queryType, offset, nil
 }
 
-func getSavedLocation(loc string) string {
-	var savedLoc string
-	if len(loc) > 0 {
-		locationMatched := false
-		for _, locationParseGroup := range locationParseGroups {
-			for _, keyword := range locationParseGroup.Keywords {
-				if matched, _ := regexp.MatchString(fmt.Sprintf("(?i)^%s$", keyword), loc); matched {
-					savedLoc = locationParseGroup.Value
-					locationMatched = true
-					break
-				}
-			}
-			if locationMatched {
-				break
-			}
-		}
-	}
-
-	// TODO: retrieve default location per user
-
-	return savedLoc
-}
-

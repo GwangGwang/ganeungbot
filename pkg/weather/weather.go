@@ -5,82 +5,41 @@ package weather
 import (
 	"context"
 	"fmt"
+	"github.com/GwangGwang/ganeungbot/pkg/geocoding"
 	"log"
 	"time"
 
 	darksky "github.com/twpayne/go-darksky"
 )
 
-// Instance is the weather forecast object
-type Instance struct {
+// Weather is the weather forecast object
+type Weather struct {
 	WeatherAPIKey   string
-	GeocodingAPIKey string
+	Geocoding       geocoding.Geocoding
 	Operational     bool
-	LocationLatLngMap map[string]LatLng
 }
 
-const weatherAPIKey = "weatherAPIKey"
-const geocodingAPIKey = "geocodingAPIKey"
-
-// New initializes and returns a new weather pkg instance
-func New(weatherApiKey string, geocodingApiKey string) (Instance, error) {
+// New initializes and returns a new weather pkg Weather
+func New(weatherApiKey string, geocoding geocoding.Geocoding) (Weather, error) {
 	log.Println("Initializing weather pkg")
 
-	w := Instance{}
+	w := Weather{}
 
 	if len(weatherApiKey) == 0 {
 		log.Printf("WARN: weather API key not found")
 		w.Operational = false
-	}
-	if len(geocodingApiKey) == 0 {
-		log.Printf("WARN: geocoding API key not found")
-		w.Operational = false
+	} else {
+		w.Operational = true
 	}
 
-	w.Operational = true
+	w.Geocoding = geocoding
+	w.WeatherAPIKey = weatherApiKey
 
 	return w, nil
 }
 
-func (w *Instance) getLocation(loc string) (LatLng, string, error) {
-	var locationQuery string
-
-	// see if there's a pre-set location name
-	// TODO: save geo coding queries somewhere and retrieve
-	defaultLoc := getSavedLocation(loc)
-	if len(defaultLoc) > 0 {
-		locationQuery = defaultLoc
-	} else {
-		locationQuery = loc
-	}
-
-	latlng, locStr, err := w.GetGPS(locationQuery)
-	if err != nil {
-		return LatLng{}, "", err
-	}
-
-	return latlng, locStr, nil
-}
-
-var userDefaultLocation map[string]string = map[string]string{
-	"younghaan": "toronto",
-	"gwanggwang": "toronto",
-	"appiejam": "toronto",
-	"chanjook": "vancouver",
-	"silversoup": "osaka",
-}
-
-func (w *Instance) getDefaultUserLocation(username string) string {
-	log.Printf("using default location for user '%s'", username)
-	if loc, ok := userDefaultLocation[username]; ok {
-		return loc
-	}
-
-	return ""
-}
-
 // GetResponse is the main outward facing function to generate weather response
-func (w *Instance) GetResponse(username string, txt string) (string, error) {
+func (w *Weather) GetResponse(username string, txt string) (string, error) {
 	// parse out time/location keywords and process any time offsets
 	parseResult, err := parse(txt)
 	if err != nil {
@@ -88,19 +47,16 @@ func (w *Instance) GetResponse(username string, txt string) (string, error) {
 	}
 
 	queryLocation := parseResult.Location
-	if len(queryLocation) == 0 {
-		// no location supplied in weather query; search for default location for the user
-		queryLocation = w.getDefaultUserLocation(username)
+	location, locStr, err := w.Geocoding.GetLocation(username, queryLocation)
+	if err != nil {
+		fmt.Printf("error in geocoding: %s", err)
+		return "", fmt.Errorf("error in geocoding api")
 	}
 
-	latlng, locStr, err := w.getLocation(queryLocation)
+	forecast, err := w.GetForecast(location.Lat, location.Lng)
 	if err != nil {
-		return "", err
-	}
-
-	forecast, err := w.GetForecast(latlng.Lat, latlng.Lng)
-	if err != nil {
-		return "", err
+		fmt.Printf("error in forecast: %s", err)
+		return "", fmt.Errorf("error in forecast api")
 	}
 
 	fmt.Printf("currently:\n %+v\n", forecast.Currently)
@@ -116,7 +72,7 @@ func (w *Instance) GetResponse(username string, txt string) (string, error) {
 	return resp, nil
 }
 
-func (w *Instance) GetForecast(lat float64, lng float64) (darksky.Forecast, error) {
+func (w *Weather) GetForecast(lat float64, lng float64) (darksky.Forecast, error) {
 
 	fmt.Println(lat)
 	fmt.Println(lng)
@@ -136,7 +92,7 @@ func (w *Instance) GetForecast(lat float64, lng float64) (darksky.Forecast, erro
 	return *forecast, nil
 }
 
-func (w *Instance) BuildResponse(f darksky.Forecast, pr parseResult) (string, error) {
+func (w *Weather) BuildResponse(f darksky.Forecast, pr parseResult) (string, error) {
 
 	var resp string
 
