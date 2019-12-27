@@ -15,6 +15,7 @@ const (
 	ACTION_GOODBYE
 	ACTION_GREETINGS
 	ACTION_INJUNG
+	ACTION_LOL
 	ACTION_TYPEHELPER
 	ACTION_SHUTUP
 	ACTION_UNSHUTUP
@@ -74,6 +75,9 @@ var Commands = []struct {
 		"^ㅇㅈ\\?$",
 		"^인정\\?$"},
 		Behavior: ACTION_INJUNG},
+	{Keywords: []string{
+		"전적$"},
+		Behavior: ACTION_LOL},
 	{Keywords: []string{
 		"^shutup$",
 		"^ㄷㅊ$",
