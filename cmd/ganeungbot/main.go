@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/GwangGwang/ganeungbot/pkg/geocoding"
+	"github.com/GwangGwang/ganeungbot/pkg/lol"
 	"log"
 	"os"
 	"strconv"
@@ -18,6 +19,7 @@ const (
 	TelegramConsoleChatId = "TELEGRAM_CONSOLE_CHAT_ID"
 	WeatherApiKey         = "WEATHER_API_KEY"
 	GeocodingApiKey       = "GEOCODING_API_KEY"
+	RiotGamesApiKey       = "RIOT_GAMES_API_KEY"
 )
 
 var envNames = []string{
@@ -25,6 +27,7 @@ var envNames = []string{
 	TelegramConsoleChatId,
 	WeatherApiKey,
 	GeocodingApiKey,
+	RiotGamesApiKey,
 }
 
 func main() {
@@ -65,12 +68,19 @@ func main() {
 		log.Println(err)
 	}
 
+	// Riot Games API
+	lol, err := lol.New(envs[RiotGamesApiKey])
+	if err != nil {
+		log.Println(err)
+	}
+
 	middleware := mid.Middleware{
 		BotStartTime:  startTime,
 		ReceiveChan:   receiveChan,
 		SendChan:      sendChan,
 		ConsoleChatID: consoleChatId,
 		Weather:       w,
+		LOL: lol,
 	}
 	middleware.Start()
 }

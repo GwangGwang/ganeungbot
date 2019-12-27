@@ -2,6 +2,7 @@ package mid
 
 import (
 	"fmt"
+	"github.com/GwangGwang/ganeungbot/pkg/lol"
 	"github.com/GwangGwang/ganeungbot/pkg/typehelper"
 	"github.com/GwangGwang/ganeungbot/pkg/util"
 	"github.com/GwangGwang/ganeungbot/pkg/weather"
@@ -16,6 +17,7 @@ type Middleware struct {
 	ReceiveChan   chan Msg
 	SendChan      chan Msg
 	Weather       weather.Weather
+	LOL           lol.LOL
 }
 
 // Msg is the received/sending message
