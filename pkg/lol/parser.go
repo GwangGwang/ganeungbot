@@ -10,6 +10,10 @@ const (
 	errNoTargetFound = "no stats target found from query; needs to be one of '전체' / username / in game name"
 	errQueryTooShort = "query too short; needs to be minimum 3 words, including target / game mode"
 	errNoGameModeKeyword = "no game mode keyword found (normal, ranked, aram, etc.)"
+	errMultipleBestStatsKeyword = "more than one keyword for best stats"
+	errMultipleGameModeKeyword = "more than one keyword for game mode"
+	errMultipleChampionKeyword = "more than one keyword for champion name"
+	errUnknownKeyword = "unknown keyword"
 )
 
 /*
@@ -43,7 +47,7 @@ need collections:
 func parse(txt string) (parseResult, error) {
 	// anonymous helper function for error returning
 	handleError := func(errMsg string) (parseResult, error) {
-		return parseResult{}, fmt.Errorf("LOL stats parsing error: %s", errMsg)
+		return parseResult{}, getError(errMsg)
 	}
 
 	result := parseResult{}
@@ -62,29 +66,59 @@ func parse(txt string) (parseResult, error) {
 	target, words := parseTarget(words)
 	if target.category == categoryNone {
 		return handleError(errNoTargetFound)
+	} else {
+		result.target = target
 	}
 
-
-
-
-
-
-		//	for _, queue := range queues {
-
-		//		for _, matcher := range queue.matchers {
-		//			if keyword == matcher {
-		//				result.gameMode = queue.gameMode
-		//				break
-		//			}
-		//		}
-		//	}
-
-	if result.gameMode == none {
-		return handleError(errNoGameModeKeyword)
+	// 2. parse game mode / (champion) / (best)
+	for _, word := range words {
+		if word == "최고" {
+			// prevent duplicate keyword
+			if result.isBestStats {
+				return handleError(errMultipleBestStatsKeyword)
+			}
+			result.isBestStats = true
+		} else if mode := extractGameMode(word); mode != gameModeNone {
+			if result.gameMode != gameModeNone {
+				return handleError(errMultipleGameModeKeyword)
+			}
+			result.gameMode = mode
+		} else if champ := extractChampion(word); champ.id != -1 {
+			if result.championId != 0 {
+				return handleError(errMultipleChampionKeyword)
+			}
+			result.championId = champ.id
+		} else {
+			return handleError(errUnknownKeyword)
+		}
 	}
 
 	return result, nil
+}
 
+func extractGameMode(word string) gameMode {
+	for _, queue := range queues {
+		for _, matcher := range queue.matchers {
+			if word == matcher {
+				return queue.gameMode
+				break
+			}
+		}
+	}
+
+	return gameModeNone
+}
+
+func extractChampion(word string) championInfo {
+	for _, champInfo := range champions {
+		for _, matcher := range champInfo.matchers {
+			if word == matcher {
+				return champInfo
+			}
+		}
+	}
+
+	return championNil
 }
 
 func parseTarget(words []string) (target, []string) {
@@ -144,5 +178,9 @@ func parseTarget(words []string) (target, []string) {
 	}
 
 	return result, words
+}
+
+func getError(errMsg string) error {
+	return fmt.Errorf("LOL stats parsing error: %s", errMsg)
 }
 
