@@ -26,6 +26,7 @@ func main() {
 		panic(err)
 	}
 
-	lol.UpdateStaticChampionData()
+	//lol.UpdateStaticChampionData()
+	lol.UpdateSummonerInfo()
 
 }

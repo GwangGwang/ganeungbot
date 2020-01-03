@@ -85,5 +85,13 @@ type ChampionInfo struct {
 	Tags []string `json:"tags"` // TODO: make into tag object
 }
 
+type SummonerInfo struct {
+	Name string `json:"name"`
+	Level int `json:"summonerLevel"`
+	RevisionDate int64 `json:"revisionDate"`
+	Id string `json:"id"`
+	AccountId string `json:"accountId"`
+}
+
 
 

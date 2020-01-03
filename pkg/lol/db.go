@@ -10,6 +10,24 @@ const (
 	lolDatabase = "lol"
 )
 
+func UpsertSummonerInfo(summonerInfo SummonerInfo) error {
+	sessionCopy := db.Session.Copy()
+	defer sessionCopy.Close()
+
+	query := bson.M{
+		"id": summonerInfo.Id,
+	}
+
+	_, err := sessionCopy.DB(lolDatabase).C("summonerInfo").Upsert(query, summonerInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+/* STATIC DATA */
+
 func UpsertStaticChampionInfo(chinfo ChampionInfo) {
 	sessionCopy := db.Session.Copy()
 	defer sessionCopy.Close()

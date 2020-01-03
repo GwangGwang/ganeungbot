@@ -2,13 +2,57 @@ package lol
 
 import (
 	"encoding/json"
+	"log"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"time"
+)
+
+const (
+	urlBase = "https://na1.api.riotgames.com/lol/%s?api_key=%s"
+
+	// in seconds
+	retryMinor = 1 // 20 requests per second
+	retryMajor = 120 // 100 requests per 2 minitues (120 seconds)
+	retryEscalateCount = 3 // # of times to retry after 1 second before moving on to 20 seconds
 )
 
 
 
+func (l *LOL) UpdateSummonerInfo() error {
+	reqUrl := fmt.Sprintf(urlBase, "summoner/v4/summoners/by-name/%s",l.RiotGamesAPIKey)
+
+	for _, userinfo := range usermap {
+		for _, ign := range userinfo.igns {
+			log.Printf("Retrieving summoner info for summoner '%s'", ign)
+
+			ignUrl := fmt.Sprintf(reqUrl, url.QueryEscape(ign))
+
+			resp, err := getWithRetry(ignUrl)
+			if err != nil {
+				return fmt.Errorf("error while retrieving summoner info for summoner %s: %s", ign, err)
+			}
+
+			body, err := ioutil.ReadAll(resp.Body)
+
+			var summonerInfo SummonerInfo
+			err = json.Unmarshal(body, &summonerInfo)
+			if err != nil {
+				return fmt.Errorf("error while unmarshalling summoner info json body for summoner %s: %s", ign, err)
+			}
+
+			err = UpsertSummonerInfo(summonerInfo)
+			if err != nil {
+				return fmt.Errorf("error while upserting summoner data for summoner %s: %s", ign, err)
+			}
+			resp.Body.Close()
+		}
+	}
+
+	return nil
+}
 
 
 /* STATIC DATA */
@@ -33,3 +77,34 @@ func (l *LOL) UpdateStaticChampionData() error {
 
 	return nil
 }
+
+/* HELPERS */
+
+// Riot API is heavily rate-limited; wait for rate limit to be lifted and retry
+func getWithRetry(reqUrl string) (*http.Response, error) {
+	retryCount := 0
+	for {
+		resp, err := http.Get(reqUrl)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode == http.StatusTooManyRequests {
+			retryCount += 1
+			retryAmount := retryMinor
+			if retryCount >= retryEscalateCount {
+				retryCount = 0
+				retryAmount = retryMajor
+			}
+			waitRetry(retryAmount)
+		} else {
+			return resp, err
+		}
+	}
+}
+
+func waitRetry(sec int) {
+	log.Printf("rate limited; retrying in %d seconds", sec)
+	time.Sleep(time.Duration(sec) * time.Second)
+}
+
