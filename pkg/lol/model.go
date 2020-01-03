@@ -71,4 +71,19 @@ type userinfo struct {
 }
 
 
+// Scraper related
+
+type ChampionData struct {
+	Version string `json:"version"`
+	Data map[string]ChampionInfo `json:"data"`
+}
+
+type ChampionInfo struct {
+	Id string `json:"id"`
+	Key string `json:"key"`
+	Name string `json:"name"`
+	Tags []string `json:"tags"` // TODO: make into tag object
+}
+
+
 

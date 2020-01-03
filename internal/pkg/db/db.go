@@ -15,7 +15,7 @@ const (
 )
 
 var (
-	session *mgo.Session
+	Session *mgo.Session
 )
 
 func ConnectDB() error {
@@ -29,7 +29,7 @@ func ConnectDB() error {
 		Password: password,
 	}
 
-	session, err = mgo.DialWithInfo(info)
+	Session, err = mgo.DialWithInfo(info)
 	if err != nil {
 		return err
 	}
@@ -43,21 +43,9 @@ type UserLocation struct {
 	Location string `json:"location"`
 }
 
-func InsertUserLocation(user string, location string) {
-	sessionCopy := session.Copy()
-	defer sessionCopy.Close()
-
-	query := bson.M{"chatID": "haha", "username": user, "location": location}
-
-	fmt.Println("inserting stuff")
-	err := sessionCopy.DB(database).C("userLocation").Insert(query)
-	if err != nil {
-		fmt.Printf(err.Error())
-	}
-}
 
 func GetUserLocation(user string) string {
-	sessionCopy := session.Copy()
+	sessionCopy := Session.Copy()
 	defer sessionCopy.Close()
 
 	query := bson.M{"chatID": "haha", "username": user}
