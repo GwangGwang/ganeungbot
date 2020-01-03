@@ -19,20 +19,20 @@ const (
 	retryEscalateCount = 3 // # of times to retry after 1 second before moving on to 20 seconds
 )
 
-
-
 func (l *LOL) UpdateSummonerInfo() error {
 	reqUrl := fmt.Sprintf(urlBase, "summoner/v4/summoners/by-name/%s",l.RiotGamesAPIKey)
 
-	for _, userinfo := range usermap {
-		for _, ign := range userinfo.igns {
-			log.Printf("Retrieving summoner info for summoner '%s'", ign)
+	userInfos := GetUsers()
 
-			ignUrl := fmt.Sprintf(reqUrl, url.QueryEscape(ign))
+	for _, userinfo := range userInfos {
+		for _, summonerName := range userinfo.SummonerNames {
+			log.Printf("Retrieving summoner info for summoner '%s'", summonerName)
 
-			resp, err := getWithRetry(ignUrl)
+			summonerUrl := fmt.Sprintf(reqUrl, url.QueryEscape(summonerName))
+
+			resp, err := getWithRetry(summonerUrl)
 			if err != nil {
-				return fmt.Errorf("error while retrieving summoner info for summoner %s: %s", ign, err)
+				return fmt.Errorf("error while retrieving summoner info for summoner %s: %s", summonerName, err)
 			}
 
 			body, err := ioutil.ReadAll(resp.Body)
@@ -40,12 +40,12 @@ func (l *LOL) UpdateSummonerInfo() error {
 			var summonerInfo SummonerInfo
 			err = json.Unmarshal(body, &summonerInfo)
 			if err != nil {
-				return fmt.Errorf("error while unmarshalling summoner info json body for summoner %s: %s", ign, err)
+				return fmt.Errorf("error while unmarshalling summoner info json body for summoner %s: %s", summonerName, err)
 			}
 
 			err = UpsertSummonerInfo(summonerInfo)
 			if err != nil {
-				return fmt.Errorf("error while upserting summoner data for summoner %s: %s", ign, err)
+				return fmt.Errorf("error while upserting summoner data for summoner %s: %s", summonerName, err)
 			}
 			resp.Body.Close()
 		}

@@ -1,9 +1,7 @@
 package db
 
 import (
-	"fmt"
 	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"time"
 )
 
@@ -35,28 +33,4 @@ func ConnectDB() error {
 	}
 
 	return nil
-}
-
-type UserLocation struct {
-	ChatID string `json:"chatID"`
-	Username string `json:"username"`
-	Location string `json:"location"`
-}
-
-
-func GetUserLocation(user string) string {
-	sessionCopy := Session.Copy()
-	defer sessionCopy.Close()
-
-	query := bson.M{"chatID": "haha", "username": user}
-
-	fmt.Println("getting stuff")
-	ul := UserLocation{}
-	err := sessionCopy.DB(database).C("userLocation").Find(query).One(&ul)
-	if err != nil {
-		fmt.Printf(err.Error())
-	}
-
-	fmt.Printf("%+v", ul)
-	return ul.Location
 }

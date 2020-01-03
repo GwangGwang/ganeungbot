@@ -10,6 +10,7 @@ import (
 // Weather is the weather forecast object
 type LOL struct {
 	RiotGamesAPIKey string
+	UserInfos []UserInfo
 }
 
 // New initializes and returns a new weather pkg Weather
@@ -20,9 +21,9 @@ func New(key string) (LOL, error) {
 
 	if len(key) == 0 {
 		return ins, fmt.Errorf("Riot Games API key not found")
-	} else {
-		ins.RiotGamesAPIKey = key
 	}
+	ins.RiotGamesAPIKey = key
+	ins.UserInfos = GetUsers()
 
 	return ins, nil
 }
@@ -30,7 +31,7 @@ func New(key string) (LOL, error) {
 // GetResponse is the main outward facing function to generate response
 func (l *LOL) GetResponse(username string, txt string) (string, error) {
 	// parse out time/location keywords and process any time offsets
-	_, err := parse(txt)
+	_, err := l.parse(txt)
 	if err != nil {
 		return "", err
 	}

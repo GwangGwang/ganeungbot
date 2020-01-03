@@ -44,7 +44,7 @@ need collections:
  @return parseResult : object encapsulating query results
  @return error       : error; should be nil for valid query
 */
-func parse(txt string) (parseResult, error) {
+func (l *LOL) parse(txt string) (parseResult, error) {
 	// anonymous helper function for error returning
 	handleError := func(errMsg string) (parseResult, error) {
 		return parseResult{}, getError(errMsg)
@@ -63,7 +63,7 @@ func parse(txt string) (parseResult, error) {
 	}
 
 	// 1. parse target
-	target, words := parseTarget(words)
+	target, words := l.parseSubject(words)
 	if target.category == categoryNone {
 		return handleError(errNoTargetFound)
 	} else {
@@ -121,7 +121,8 @@ func extractChampion(word string) championInfo {
 	return championNil
 }
 
-func parseTarget(words []string) (target, []string) {
+func (l *LOL) parseSubject(words []string) (target, []string) {
+	// TODO: should add defaulting to querying user if no target found
 
 	result := target{}
 
@@ -133,7 +134,8 @@ func parseTarget(words []string) (target, []string) {
 		}
 		words = words[1:]
 	} else {
-		for user, userinfo := range usermap {
+		for _, userinfo := range l.UserInfos {
+			user := userinfo.HumanName
 			userwords := strings.Split(user, " ")
 			matched := true
 			for i, userword := range userwords {
@@ -151,7 +153,7 @@ func parseTarget(words []string) (target, []string) {
 				break
 			} else {
 				ignMatched := false
-				for _, ign := range userinfo.igns {
+				for _, ign := range userinfo.SummonerNames {
 					ignwords := strings.Split(ign, " ")
 					matched := true
 					for i, ignword := range ignwords {

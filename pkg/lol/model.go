@@ -57,22 +57,13 @@ var championNil = championInfo{
 	id: -1, name: "",
 }
 
-var usermap = map[string]userinfo{
-	"광승": {igns: []string{"GwangGwang", "KwangKwang"}},
-	"영하": {igns: []string{"0ha", "1ha", "looc", "3ha", "5ha"}},
-	"은국": {igns: []string{"SilverSoup"}},
-	"찬주": {igns: []string{"cj2da"}},
-	"형주": {igns: []string{"appiejam", "LoveHeals", "LoveEndures"}},
-	"소라": {igns: []string{"Laya Yi"}},
+type UserInfo struct {
+	HumanName string `json:"humanname"`
+	UserName string `json:"username"`
+	SummonerNames []string `json:"summonerNames" bson:"summonerNames"`
 }
-
-type userinfo struct {
-	igns []string
-}
-
 
 // Scraper related
-
 type ChampionData struct {
 	Version string `json:"version"`
 	Data map[string]ChampionInfo `json:"data"`
