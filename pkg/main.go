@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"github.com/GwangGwang/ganeungbot/internal/pkg/db"
-	"github.com/GwangGwang/ganeungbot/pkg/lol"
+	"github.com/GwangGwang/ganeungbot/pkg/lolScraper"
+	"log"
 )
 
 const (
@@ -15,12 +15,17 @@ const (
 func main() {
 
 
-	fmt.Println("connecting to mongo")
-	err := db.ConnectDB()
-	fmt.Println("connected to mongo!")
+//	fmt.Println("connecting to mongo")
+	_ = db.ConnectDB()
 
 
-	lol, err := lol.New("RGAPI-ffeadd4d-23f4-40a6-a915-c40f34898af1")
+	db.Hi = "what"
+
+	fmt.Println(db.Hi)
+//	fmt.Println("connected to mongo!")
+//
+//
+	lol, err := lolScraper.New("RGAPI-2e16a30c-3274-4f4a-a16d-f389352b15d6")
 	if err != nil {
 		panic(err)
 	}
@@ -31,8 +36,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	//lol.UpdateStaticChampionData()
-	lol.UpdateSummonerInfo()
+//
+//	//lol.UpdateStaticChampionData()
+//
+//	wha := fmt.Sprintf("%sblahblah%d", "bleh")
+//	fmt.Println(wha)
+//
+//	fmt.Printf(wha, 12)
 
 }

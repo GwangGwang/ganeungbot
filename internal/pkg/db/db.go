@@ -14,6 +14,7 @@ const (
 
 var (
 	Session *mgo.Session
+	Hi string
 )
 
 func ConnectDB() error {
