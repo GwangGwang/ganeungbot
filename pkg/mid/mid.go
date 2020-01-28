@@ -2,6 +2,7 @@ package mid
 
 import (
 	"fmt"
+	"github.com/GwangGwang/ganeungbot/pkg/translate"
 	"github.com/GwangGwang/ganeungbot/pkg/typehelper"
 	"github.com/GwangGwang/ganeungbot/pkg/util"
 	"github.com/GwangGwang/ganeungbot/pkg/weather"
@@ -16,6 +17,7 @@ type Middleware struct {
 	ReceiveChan   chan Msg
 	SendChan      chan Msg
 	Weather       weather.Weather
+	Translate     translate.Translate
 }
 
 // Msg is the received/sending message
@@ -105,6 +107,12 @@ func (m *Middleware) buildResponse(action Action, username string, txt string) [
 		log.Printf("%+v\n", util.GetRandomElement(strings.Split(txt, "vs")))
 	} else {
 		switch action {
+		case ACTION_TRANSLATE:
+			resp, err := m.Translate.GetResponse(txt)
+			if err != nil {
+				log.Printf(err.Error())
+			}
+			resps = append(resps, resp)
 		case ACTION_TYPEHELPER:
 			typehelpedMsg := typehelper.GetResponse(strings.Split(txt, typehelper.Trigger)[1])
 			resps = append(resps, fmt.Sprintf("%s: %s", username, typehelpedMsg))
@@ -115,6 +123,8 @@ func (m *Middleware) buildResponse(action Action, username string, txt string) [
 		case ACTION_WEATHER:
 			// TODO: send in user's location or user's info so that we can fetch default location per user?
 			resp, err := m.Weather.GetResponse(username, txt)
+
+			// TODO: err should only be logged and the resp should contain err info as well (see translate)
 			if err != nil {
 				log.Printf(err.Error())
 				resps = append(resps, err.Error())

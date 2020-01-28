@@ -15,6 +15,7 @@ const (
 	ACTION_GOODBYE
 	ACTION_GREETINGS
 	ACTION_INJUNG
+	ACTION_TRANSLATE
 	ACTION_TYPEHELPER
 	ACTION_SHUTUP
 	ACTION_UNSHUTUP
@@ -40,7 +41,9 @@ var Commands = []struct {
 		"되\\?$",
 		"됨\\?$",
 		"돼\\?$",
-		"됌\\?$"},
+		"됌\\?$",
+		"돼나\\?$",
+		"되나\\?$"},
 		Behavior: ACTION_ABLE},
 	{Keywords: []string{
 		"^cah$",
@@ -87,6 +90,9 @@ var Commands = []struct {
 		"^말해$",
 		"^돌아와$"},
 		Behavior: ACTION_UNSHUTUP},
+	{Keywords: []string{
+		"^번역"},
+		Behavior: ACTION_TRANSLATE},
 	{Keywords: []string{".+ vs .+"},
 		Behavior: ACTION_VERSUS},
 	{Keywords: []string{"날씨$", "weather$", "forecast$"},

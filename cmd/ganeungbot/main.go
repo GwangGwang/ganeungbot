@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/GwangGwang/ganeungbot/pkg/geocoding"
+
 	"log"
 	"os"
 	"strconv"
@@ -10,6 +10,8 @@ import (
 
 	"github.com/GwangGwang/ganeungbot/pkg/mid"
 	"github.com/GwangGwang/ganeungbot/pkg/telegram"
+	"github.com/GwangGwang/ganeungbot/pkg/geocoding"
+	"github.com/GwangGwang/ganeungbot/pkg/translate"
 	"github.com/GwangGwang/ganeungbot/pkg/weather"
 )
 
@@ -18,6 +20,7 @@ const (
 	TelegramConsoleChatId = "TELEGRAM_CONSOLE_CHAT_ID"
 	WeatherApiKey         = "WEATHER_API_KEY"
 	GeocodingApiKey       = "GEOCODING_API_KEY"
+	TranslateApiKey         = "TRANSLATE_API_KEY"
 )
 
 var envNames = []string{
@@ -25,6 +28,7 @@ var envNames = []string{
 	TelegramConsoleChatId,
 	WeatherApiKey,
 	GeocodingApiKey,
+	TranslateApiKey,
 }
 
 func main() {
@@ -65,12 +69,19 @@ func main() {
 		log.Println(err)
 	}
 
+	// Translate API
+	t, err := translate.New(envs[TranslateApiKey])
+	if err != nil {
+		log.Println(err)
+	}
+
 	middleware := mid.Middleware{
 		BotStartTime:  startTime,
 		ReceiveChan:   receiveChan,
 		SendChan:      sendChan,
 		ConsoleChatID: consoleChatId,
 		Weather:       w,
+		Translate: t,
 	}
 	middleware.Start()
 }
