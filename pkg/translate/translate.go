@@ -115,14 +115,14 @@ func (t *Translate) translate(txt string) (translate.Translation, error) {
 
 	client, err := translate.NewClient(ctx, option.WithAPIKey(t.ApiKey))
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		return translate.Translation{}, err
 	}
 	defer client.Close()
 
 	resp, err := client.Translate(ctx, []string{txt}, t.TargetLanguage, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		return translate.Translation{}, err
 	}
 
