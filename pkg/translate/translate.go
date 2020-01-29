@@ -46,7 +46,7 @@ func New(apiKey string) (Translate, error) {
 	}
 	t.LanguageList = strings.Join(langList, ", ")
 
-	t.TargetLanguage = language.Make("en") // default is English
+	t.TargetLanguage = language.Make("English") // default is English
 
 	return t, nil
 }
@@ -80,9 +80,8 @@ func (t *Translate) GetResponse(txt string) (string, error) {
 	case translateText:
 		resp, err := t.translate(parseResult.text)
 		if err != nil {
-			return "error during translation", err
+			return handleError(fmt.Errorf("error during translation"))
 		}
-
 		return fmt.Sprintf("(%s --> %s)\n%s", t.getLanguageFromTag(resp.Source), t.getLanguageFromTag(t.TargetLanguage), resp.Text), nil
 	}
 

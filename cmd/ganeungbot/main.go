@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/GwangGwang/ganeungbot/pkg/geocoding"
 	"github.com/GwangGwang/ganeungbot/pkg/mid"
 	"github.com/GwangGwang/ganeungbot/pkg/telegram"
-	"github.com/GwangGwang/ganeungbot/pkg/geocoding"
 	"github.com/GwangGwang/ganeungbot/pkg/translate"
 	"github.com/GwangGwang/ganeungbot/pkg/weather"
 )
@@ -20,7 +20,7 @@ const (
 	TelegramConsoleChatId = "TELEGRAM_CONSOLE_CHAT_ID"
 	WeatherApiKey         = "WEATHER_API_KEY"
 	GeocodingApiKey       = "GEOCODING_API_KEY"
-	TranslateApiKey         = "TRANSLATE_API_KEY"
+	TranslateApiKey       = "TRANSLATE_API_KEY"
 )
 
 var envNames = []string{
