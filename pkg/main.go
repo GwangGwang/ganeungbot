@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/GwangGwang/ganeungbot/pkg/translate"
 )
 
 func main() {
 	fmt.Println("test")
-
-	t, _ := translate.New("AIzaSyDimukIw-X7rckNqjuXLtl13Pu_Yc7WJZU")
+/*
+	t, _ := translate.New()
 	str, err := t.GetResponse("번역언어: ko")
 
 
@@ -22,4 +21,5 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	fmt.Println(str)
+*/
 }
