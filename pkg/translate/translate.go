@@ -89,18 +89,23 @@ func (t *Translate) GetResponse(txt string) (string, error) {
 }
 
 func (t *Translate) setLanguage(target string) error {
-	lang, err := language.Parse(target)
-	if err != nil {
-		return err
+	if _, ok := languages[target]; ok {
+		parsed, err := language.Parse(target)
+		if err != nil {
+			return err
+		}
+		t.TargetLanguage = parsed
+	} else {
+		return fmt.Errorf("unknown language '%s'", target)
 	}
-	t.TargetLanguage = lang
+
 	return nil
 }
 
 func (t *Translate) getLanguage(code string) string {
 	ret := code
 	if lang, ok := languages[code]; ok {
-		ret = lang
+		return lang
 	}
 	return ret
 }
