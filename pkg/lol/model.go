@@ -63,7 +63,6 @@ type UserInfo struct {
 	SummonerNames []string `json:"summonerNames" bson:"summonerNames"`
 }
 
-// Scraper related
 type ChampionData struct {
 	Version string `json:"version"`
 	Data map[string]ChampionInfo `json:"data"`
@@ -84,4 +83,25 @@ type SummonerInfo struct {
 	AccountId string `json:"accountId"`
 }
 
+type MatchReference struct {
+	Timestamp int64 `json:"timestamp"`
+	GameId int64 `json:"gameId"`
+	ChampionId int `json:"champion"`
+	PlatformId string `json:"platformId"`
+	Season int `json:"season"`
+	QueueId int `json:"queue"` // index
+}
+
+type Queue struct {
+	Name     string
+	QueueIds []int
+	Matchers []string
+}
+
+var Queues = []Queue{
+	{Name: "ARAM", QueueIds: []int{65, 100, 450}, Matchers: []string{"aram", "아람", "칼바람"}},
+	{Name: "Normal", QueueIds: []int{2, 400, 430}, Matchers: []string{"normal", "노멀", "노말", "협곡"}},
+	{Name: "Ranked", QueueIds: []int{4, 6, 410, 420, 440}, Matchers: []string{"ranked", "rank", "랭", "랭크"}},
+	{Name: "AI", QueueIds: []int{7, 31, 32, 33, 830, 840, 850}, Matchers: []string{"ai", "bot", "봇", "봇겜", "봇전"}},
+}
 

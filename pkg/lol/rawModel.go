@@ -1,16 +1,16 @@
-package lolScraper
+package lol
 
 /*
  * RAW DATA FROM RIOT API
  */
-type Matchlist struct {
+type MatchlistRaw struct {
 	MatchReferences []MatchReference `json:"matches" bson:"matches"`
 	TotalGames int `json:"totalGames"`
 	StartIndex int `json:"startIndex"`
 	EndIndex int `json:"endIndex"`
 }
 
-type MatchReference struct {
+type MatchReferenceRaw struct {
 	Timestamp int64 `json:"timestamp"`
 	Lane string `json:"lane"` // TODO: investigate what this entails
 	Role string `json:"role"` // TODO: same as above
@@ -41,10 +41,10 @@ type MatchRaw struct {
 
 type ParticipantIdentity struct {
 	ParticipantId int `json:"participantId"`
-	Data PlayerData `json:"player" bson:"player"`
+	Data PlayerDataRaw `json:"player" bson:"player"`
 }
 
-type PlayerData struct {
+type PlayerDataRaw struct {
 	SummonerName string `json:"summonerName"`
 	CurrentAccountId string `json:"currentAccountId"`
 	SummonerId string `json:"summonerId"`
@@ -174,12 +174,12 @@ type ParticipantStats struct {
 	// etc.
 	LongestTimeSpentLiving int `json:"longestTimeSpentLiving"`
 
-//	NodeCapture          int `json:"nodeCapture"`
-//	NodeCaptureAssist    int `json:"nodeCaptureAssist"`
-//	NodeNeutralize       int `json:"nodeNeutralize"`
-//	NodeNeutralizeAssist int `json:"nodeNeutralizeAssist"`
-//	AltarsCaptured       int `json:"altarsCaptured"`
-//	AltarsNeutralized    int `json:"altarsNeutralized"`
+	//	NodeCapture          int `json:"nodeCapture"`
+	//	NodeCaptureAssist    int `json:"nodeCaptureAssist"`
+	//	NodeNeutralize       int `json:"nodeNeutralize"`
+	//	NodeNeutralizeAssist int `json:"nodeNeutralizeAssist"`
+	//	AltarsCaptured       int `json:"altarsCaptured"`
+	//	AltarsNeutralized    int `json:"altarsNeutralized"`
 
 	TotalPlayerScore  int `json:"totalPlayerScore"`
 	CombatPlayerScore int `json:"combatPlayerScore"`
@@ -189,55 +189,55 @@ type ParticipantStats struct {
 
 	ChampLevel int `json:"champLevel"`
 
-//	Item0 int `json:"item0"`
-//	Item1 int `json:"item1"`
-//	Item2 int `json:"item2"`
-//	Item3 int `json:"item3"`
-//	Item4 int `json:"item4"`
-//	Item5 int `json:"item5"`
-//	Item6 int `json:"item6"`
-//
-//	PerkPrimaryStyle int `json:"perkPrimaryStyle"`
-//	PerkSubStyle     int `json:"perkSubStyle"`
-//
-//	Perk0 int `json:"perk0"`
-//	Perk1 int `json:"perk1"`
-//	Perk2 int `json:"perk2"`
-//	Perk3 int `json:"perk3"`
-//	Perk4 int `json:"perk4"`
-//	Perk5 int `json:"perk5"`
-//
-//	Perk0Var1 int `json:"perk0Var1"`
-//	Perk0Var2 int `json:"perk0Var2"`
-//	Perk0Var3 int `json:"perk0Var3"`
-//	Perk1Var1 int `json:"perk1Var1"`
-//	Perk1Var2 int `json:"perk1Var2"`
-//	Perk1Var3 int `json:"perk1Var3"`
-//	Perk2Var1 int `json:"perk2Var1"`
-//	Perk2Var2 int `json:"perk2Var2"`
-//	Perk2Var3 int `json:"perk2Var3"`
-//	Perk3Var1 int `json:"perk3Var1"`
-//	Perk3Var2 int `json:"perk3Var2"`
-//	Perk3Var3 int `json:"perk3Var3"`
-//	Perk4Var1 int `json:"perk4Var1"`
-//	Perk4Var2 int `json:"perk4Var2"`
-//	Perk4Var3 int `json:"perk4Var3"`
-//	Perk5Var1 int `json:"perk5Var1"`
-//	Perk5Var2 int `json:"perk5Var2"`
-//	Perk5Var3 int `json:"perk5Var3"`
-//
-//	ObjectivePlayerScore int `json:"objectivePlayerScore"`
-//	TotalScoreRank       int `json:"totalScoreRank"`
-//	PlayerScore0         int `json:"playerScore0"` // what are these?
-//	PlayerScore1         int `json:"playerScore1"`
-//	PlayerScore2         int `json:"playerScore2"`
-//	PlayerScore3         int `json:"playerScore3"`
-//	PlayerScore4         int `json:"playerScore4"`
-//	PlayerScore5         int `json:"playerScore5"`
-//	PlayerScore6         int `json:"playerScore6"`
-//	PlayerScore7         int `json:"playerScore7"`
-//	PlayerScore8         int `json:"playerScore8"`
-//	PlayerScore9         int `json:"playerScore9"`
+	//	Item0 int `json:"item0"`
+	//	Item1 int `json:"item1"`
+	//	Item2 int `json:"item2"`
+	//	Item3 int `json:"item3"`
+	//	Item4 int `json:"item4"`
+	//	Item5 int `json:"item5"`
+	//	Item6 int `json:"item6"`
+	//
+	//	PerkPrimaryStyle int `json:"perkPrimaryStyle"`
+	//	PerkSubStyle     int `json:"perkSubStyle"`
+	//
+	//	Perk0 int `json:"perk0"`
+	//	Perk1 int `json:"perk1"`
+	//	Perk2 int `json:"perk2"`
+	//	Perk3 int `json:"perk3"`
+	//	Perk4 int `json:"perk4"`
+	//	Perk5 int `json:"perk5"`
+	//
+	//	Perk0Var1 int `json:"perk0Var1"`
+	//	Perk0Var2 int `json:"perk0Var2"`
+	//	Perk0Var3 int `json:"perk0Var3"`
+	//	Perk1Var1 int `json:"perk1Var1"`
+	//	Perk1Var2 int `json:"perk1Var2"`
+	//	Perk1Var3 int `json:"perk1Var3"`
+	//	Perk2Var1 int `json:"perk2Var1"`
+	//	Perk2Var2 int `json:"perk2Var2"`
+	//	Perk2Var3 int `json:"perk2Var3"`
+	//	Perk3Var1 int `json:"perk3Var1"`
+	//	Perk3Var2 int `json:"perk3Var2"`
+	//	Perk3Var3 int `json:"perk3Var3"`
+	//	Perk4Var1 int `json:"perk4Var1"`
+	//	Perk4Var2 int `json:"perk4Var2"`
+	//	Perk4Var3 int `json:"perk4Var3"`
+	//	Perk5Var1 int `json:"perk5Var1"`
+	//	Perk5Var2 int `json:"perk5Var2"`
+	//	Perk5Var3 int `json:"perk5Var3"`
+	//
+	//	ObjectivePlayerScore int `json:"objectivePlayerScore"`
+	//	TotalScoreRank       int `json:"totalScoreRank"`
+	//	PlayerScore0         int `json:"playerScore0"` // what are these?
+	//	PlayerScore1         int `json:"playerScore1"`
+	//	PlayerScore2         int `json:"playerScore2"`
+	//	PlayerScore3         int `json:"playerScore3"`
+	//	PlayerScore4         int `json:"playerScore4"`
+	//	PlayerScore5         int `json:"playerScore5"`
+	//	PlayerScore6         int `json:"playerScore6"`
+	//	PlayerScore7         int `json:"playerScore7"`
+	//	PlayerScore8         int `json:"playerScore8"`
+	//	PlayerScore9         int `json:"playerScore9"`
 }
 
 type ParticipantTimelineData struct {

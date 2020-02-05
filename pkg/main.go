@@ -25,7 +25,7 @@ func main() {
 //	fmt.Println("connected to mongo!")
 //
 //
-	lol, err := lolScraper.New("RGAPI-2e16a30c-3274-4f4a-a16d-f389352b15d6")
+	lol, err := lolScraper.New("RGAPI-d3835662-5735-4c5a-9140-2589b1689f9f")
 	if err != nil {
 		panic(err)
 	}

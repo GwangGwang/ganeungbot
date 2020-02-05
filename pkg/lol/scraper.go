@@ -1,9 +1,8 @@
-package lolScraper
+package lol
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/GwangGwang/ganeungbot/pkg/lol"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -20,15 +19,14 @@ const (
 	retryEscalateCount = 3 // # of times to retry after 1 second before moving on to 20 seconds
 )
 
-
 // Weather is the weather forecast object
 type LOLScraper struct {
 	RiotGamesAPIKey string
-	UserInfos []lol.UserInfo
+	UserInfos []UserInfo
 }
 
 // New initializes and returns a new weather pkg Weather
-func New(key string) (LOLScraper, error) {
+func NewScraper(key string) (LOLScraper, error) {
 	log.Println("Initializing lol pkg")
 
 	ins := LOLScraper{}
@@ -37,13 +35,13 @@ func New(key string) (LOLScraper, error) {
 		return ins, fmt.Errorf("Riot Games API key not found")
 	}
 	ins.RiotGamesAPIKey = key
-	ins.UserInfos = lol.GetUsers()
+	ins.UserInfos = GetUsers()
 
 	return ins, nil
 }
 
 
-func (l *LOLScraper) UpdateMatchList(summonerInfo lol.SummonerInfo) error {
+func (l *LOLScraper) UpdateMatchList(summonerInfo SummonerInfo) error {
 	/*
 	  Two problems with matchlists
 	  - Only up to 100 returned per query
@@ -69,7 +67,7 @@ func (l *LOLScraper) UpdateMatchList(summonerInfo lol.SummonerInfo) error {
 			return fmt.Errorf("error while retrieving matchlist for summoner '%s': %s", summonerName, err)
 		}
 
-		var matchlist Matchlist
+		var matchlist MatchlistRaw
 		err = json.Unmarshal(body, &matchlist)
 		if err != nil {
 			return fmt.Errorf("error while unmarshaling matchlist for summoner '%s': %s", summonerName, err)
@@ -114,7 +112,7 @@ func (l *LOLScraper) UpdateMatchList(summonerInfo lol.SummonerInfo) error {
 func (l *LOLScraper) UpdateSummonerInfo() error {
 	reqUrl := fmt.Sprintf(urlBase, "summoner/v4/summoners/by-name/%s", l.RiotGamesAPIKey)
 
-	userInfos := lol.GetUsers()
+	userInfos := GetUsers()
 
 	for _, userInfo := range userInfos {
 		for _, summonerName := range userInfo.SummonerNames {
@@ -127,7 +125,7 @@ func (l *LOLScraper) UpdateSummonerInfo() error {
 				return fmt.Errorf("error while retrieving summoner info for summoner %s: %s", summonerName, err)
 			}
 
-			var summonerInfo lol.SummonerInfo
+			var summonerInfo SummonerInfo
 			err = json.Unmarshal(body, &summonerInfo)
 			if err != nil {
 				return fmt.Errorf("error while unmarshalling summoner info json body for summoner %s: %s", summonerName, err)
