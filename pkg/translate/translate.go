@@ -3,6 +3,7 @@ package translate
 import (
 	"cloud.google.com/go/translate"
 	"context"
+	"html"
 	"fmt"
 	"golang.org/x/text/language"
 	"google.golang.org/api/option"
@@ -46,7 +47,7 @@ func New(apiKey string) (Translate, error) {
 	}
 	t.LanguageList = strings.Join(langList, ", ")
 
-	t.TargetLanguage = language.Make("English") // default is English
+	t.TargetLanguage = language.Make("en") // default is English
 
 	return t, nil
 }
@@ -82,7 +83,7 @@ func (t *Translate) GetResponse(txt string) (string, error) {
 		if err != nil {
 			return handleError(fmt.Errorf("error during translation"))
 		}
-		return fmt.Sprintf("(%s --> %s)\n%s", t.getLanguageFromTag(resp.Source), t.getLanguageFromTag(t.TargetLanguage), resp.Text), nil
+		return fmt.Sprintf("(%s --> %s)\n%s", t.getLanguageFromTag(resp.Source), t.getLanguageFromTag(t.TargetLanguage), html.UnescapeString(resp.Text)), nil
 	}
 
 	return "", err
