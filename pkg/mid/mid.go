@@ -10,22 +10,46 @@ import (
 	"strings"
 )
 
-// Middleware is the middleware object that is the core of the bot
-type Middleware struct {
-	BotStartTime  int64
-	ConsoleChatID int64
-	ReceiveChan   chan Msg
-	SendChan      chan Msg
-	Weather       weather.Weather
-	Translate     translate.Translate
-}
+// Middleware contains api destinations and information regarding the rooms the bot is invited to
+type (
+	Middleware struct {
+		BotStartTime  int64
+		ConsoleChatID int64
+		ReceiveChan   chan Msg
+		SendChan      chan Msg
+		Weather       weather.Weather
+		Translate     translate.Translate
+		ChatGroups    map[int64]ChatGroup
+	}
 
-// Msg is the received/sending message
-type Msg struct {
-	Timestamp int64
-	ChatID    int64
-	Username  string
-	Content   string
+	ChatGroup struct {
+		Users map[string]UserInfo
+		IsShutup bool
+	}
+
+	// for now empty struct
+	UserInfo struct {
+	}
+
+	// Msg is the received/sending message
+	Msg struct {
+		Timestamp int64
+		ChatID    int64
+		Username  string
+		Content   string
+	}
+)
+
+func New(startTime int64, receiveChan chan Msg, sendChan chan Msg, consoleChatId int64, w weather.Weather, t translate.Translate) *Middleware {
+	return &Middleware{
+		BotStartTime: startTime,
+		ConsoleChatID: consoleChatId,
+		ReceiveChan: receiveChan,
+		SendChan: sendChan,
+		Weather: w,
+		Translate: t,
+		ChatGroups: make(map[int64]ChatGroup),
+	}
 }
 
 // Start initializes the middlelayer for processing msgs received and to send
@@ -42,11 +66,19 @@ func (m *Middleware) Start() {
 func (m *Middleware) process() {
 	for msg := range m.ReceiveChan {
 		// Initialize new chat object if never seen before
-		//	if chat, exists := chats[msg.ChatID]; !exists {
-		//		chat = Chat{
-		//			IsShutup: false,
-		//		}
-		//	}
+		if _, exists := m.ChatGroups[msg.ChatID]; !exists {
+			m.ChatGroups[msg.ChatID] = ChatGroup{
+				Users:                   make(map[string]UserInfo),
+				IsShutup:                false,
+			}
+		}
+		chatGroup := m.ChatGroups[msg.ChatID]
+
+		// add user if not exists in chat group info yet
+		// TODO: should probably skip over bots... how?
+		if _, exists := chatGroup.Users[msg.Username]; !exists {
+			chatGroup.Users[msg.Username] = UserInfo{}
+		}
 
 		// Skip non-text msgs; TODO: future somehow support non-text msgs (image, sound, video, etc.)
 		if msg.Content == "" {
@@ -64,7 +96,7 @@ func (m *Middleware) process() {
 		util.PrintChatLog(msg.ChatID, 0, msg.Username, msg.Content)
 
 		// Generate response based on msg text content
-		responses := m.prepareResponse(msg.Username, msg.Content)
+		responses := m.prepareResponse(msg)
 
 		for _, response := range responses {
 			if len(response) > 0 {
@@ -81,34 +113,38 @@ func (m *Middleware) process() {
 				}
 			}
 		}
+
+		// update chatgroup
+		m.ChatGroups[msg.ChatID] = chatGroup
 	}
 }
 
 // TODO: come up with a better function name
-func (m *Middleware) prepareResponse(username string, txt string) []string {
-	parseResult := Parse(txt)
+func (m *Middleware) prepareResponse(msg Msg) []string {
+	parseResult := Parse(msg.Content)
 	//log.Printf("%+v\n", parseResult)
 
 	responses := []string{}
 	if len(parseResult.Actions) > 0 {
-		responses = m.buildResponse(parseResult.Actions[0], username, txt)
+		responses = m.buildResponse(parseResult.Actions[0], msg)
 	}
 
 	return responses
 }
 
-func (m *Middleware) buildResponse(action Action, username string, txt string) []string {
+func (m *Middleware) buildResponse(action Action, msg Msg) []string {
+	username := msg.Username
+	txt := msg.Content
 	resps := []string{}
 
 	if answerList, ok := Answers[action]; ok {
 		resps = append(resps, util.GetRandomElement(answerList))
 	} else if action == ACTION_VERSUS {
 		resps = append(resps, util.GetRandomElement(strings.Split(txt, "vs")))
-		log.Printf("%+v\n", util.GetRandomElement(strings.Split(txt, "vs")))
 	} else {
 		switch action {
 		case ACTION_TRANSLATE:
-			resp, err := m.Translate.GetResponse(txt)
+			resp, err := m.Translate.GetResponse(msg.ChatID, txt)
 			if err != nil {
 				log.Printf(err.Error())
 			}
@@ -118,8 +154,12 @@ func (m *Middleware) buildResponse(action Action, username string, txt string) [
 			resps = append(resps, fmt.Sprintf("%s: %s", username, typehelpedMsg))
 
 			// use the translated message for response generation
-			resps = append(resps, m.prepareResponse(username, typehelpedMsg)...)
-
+			resps = append(resps, m.prepareResponse(Msg{
+				Timestamp: msg.Timestamp,
+				ChatID:    msg.ChatID,
+				Username:  username,
+				Content:   typehelpedMsg,
+			})...)
 		case ACTION_WEATHER:
 			// TODO: send in user's location or user's info so that we can fetch default location per user?
 			resp, err := m.Weather.GetResponse(username, txt)

@@ -22,7 +22,7 @@ const usage string = `Usage:
 type Translate struct {
 	ApiKey   string
 	Operational bool
-	TargetLanguage language.Tag
+	TargetLanguageMap map[int64]language.Tag // chatID to language
 	LanguageList string
 }
 
@@ -47,16 +47,21 @@ func New(apiKey string) (Translate, error) {
 	}
 	t.LanguageList = strings.Join(langList, ", ")
 
-	t.TargetLanguage = language.Make("en") // default is English
+	t.TargetLanguageMap = make(map[int64]language.Tag)
 
 	return t, nil
 }
 
 // GetResponse is the main outward facing function to generate weather response
-func (t *Translate) GetResponse(txt string) (string, error) {
+func (t *Translate) GetResponse(chatID int64, txt string) (string, error) {
 	// anonymous helper function for error returning
 	handleError := func(err error) (string, error) {
 		return fmt.Sprintf("%s\n%s", err.Error(), usage), err
+	}
+
+	if _, exists := t.TargetLanguageMap[chatID]; !exists {
+		log.Printf("setting default language to english for newfound chatgroup '%d'", chatID)
+		t.TargetLanguageMap[chatID] = language.Make("en")
 	}
 
 	parseResult, err := parse(txt)
@@ -69,33 +74,33 @@ func (t *Translate) GetResponse(txt string) (string, error) {
 		return fmt.Sprintf("Supported langauge codes: %s", t.LanguageList), nil
 	case setLanguage:
 		setLang := parseResult.text
-		err := t.setLanguage(setLang)
+		err := t.setLanguage(chatID, setLang)
 		if err != nil {
 			return handleError(err)
 		} else {
-			langName := t.getLanguage(setLang)
+			langName := t.getTargetLanguage(chatID)
 			return fmt.Sprintf("Changed target language to %s", langName), nil
 		}
 	case getLanguage:
-		return fmt.Sprintf("Target language: %s", t.getLanguage(parseResult.text)), nil
+		return fmt.Sprintf("Target language: %s", t.getTargetLanguage(chatID)), nil
 	case translateText:
-		resp, err := t.translate(parseResult.text)
+		resp, err := t.translate(t.TargetLanguageMap[chatID], parseResult.text)
 		if err != nil {
 			return handleError(fmt.Errorf("error during translation"))
 		}
-		return fmt.Sprintf("(%s --> %s)\n%s", t.getLanguageFromTag(resp.Source), t.getLanguageFromTag(t.TargetLanguage), html.UnescapeString(resp.Text)), nil
+		return fmt.Sprintf("(%s --> %s)\n%s", getLanguageNameFromTag(resp.Source), getLanguageNameFromTag(t.TargetLanguageMap[chatID]), html.UnescapeString(resp.Text)), nil
 	}
 
 	return "", err
 }
 
-func (t *Translate) setLanguage(target string) error {
+func (t *Translate) setLanguage(chatID int64, target string) error {
 	if _, ok := languages[target]; ok {
 		parsed, err := language.Parse(target)
 		if err != nil {
 			return err
 		}
-		t.TargetLanguage = parsed
+		t.TargetLanguageMap[chatID] = parsed
 	} else {
 		return fmt.Errorf("unknown language '%s'", target)
 	}
@@ -103,20 +108,11 @@ func (t *Translate) setLanguage(target string) error {
 	return nil
 }
 
-func (t *Translate) getLanguage(code string) string {
-	ret := code
-	if lang, ok := languages[code]; ok {
-		return lang
-	}
-	return ret
+func (t *Translate) getTargetLanguage(chatID int64) string {
+	return getLanguageNameFromTag(t.TargetLanguageMap[chatID])
 }
 
-func (t *Translate) getLanguageFromTag(tag language.Tag) string {
-	ret := fmt.Sprintf("%s", tag)
-	return t.getLanguage(ret)
-}
-
-func (t *Translate) translate(txt string) (translate.Translation, error) {
+func (t *Translate) translate(lang language.Tag, txt string) (translate.Translation, error) {
 	ctx := context.Background()
 
 	client, err := translate.NewClient(ctx, option.WithAPIKey(t.ApiKey))
@@ -126,7 +122,7 @@ func (t *Translate) translate(txt string) (translate.Translation, error) {
 	}
 	defer client.Close()
 
-	resp, err := client.Translate(ctx, []string{txt}, t.TargetLanguage, nil)
+	resp, err := client.Translate(ctx, []string{txt}, lang, nil)
 	if err != nil {
 		log.Print(err)
 		return translate.Translation{}, err
@@ -134,3 +130,13 @@ func (t *Translate) translate(txt string) (translate.Translation, error) {
 
 	return resp[0], nil
 }
+
+// HELPERS
+func getLanguageNameFromTag(tag language.Tag) string {
+	codeStr := fmt.Sprintf("%s", tag)
+	if lang, ok := languages[codeStr]; ok {
+		return lang
+	}
+	return ""
+}
+

@@ -75,13 +75,6 @@ func main() {
 		log.Println(err)
 	}
 
-	middleware := mid.Middleware{
-		BotStartTime:  startTime,
-		ReceiveChan:   receiveChan,
-		SendChan:      sendChan,
-		ConsoleChatID: consoleChatId,
-		Weather:       w,
-		Translate: t,
-	}
+	middleware := mid.New(startTime, receiveChan, sendChan, consoleChatId, w, t)
 	middleware.Start()
 }
