@@ -4,7 +4,7 @@ package lol
  * RAW DATA FROM RIOT API
  */
 type MatchlistRaw struct {
-	MatchReferences []MatchReference `json:"matches" bson:"matches"`
+	MatchReferencesRaw []MatchReferenceRaw `json:"matches" bson:"matches"`
 	TotalGames int `json:"totalGames"`
 	StartIndex int `json:"startIndex"`
 	EndIndex int `json:"endIndex"`

@@ -7,29 +7,65 @@ import (
 	"log"
 )
 
-// Weather is the weather forecast object
 type LOL struct {
 	RiotGamesAPIKey string
-	UserInfos []UserInfo
+	UserInfoMap map[int64]string
+	UserInfos []User
+	Champions map[string]ChampionInfo
 }
 
 // New initializes and returns a new weather pkg Weather
 func New(key string) (LOL, error) {
 	log.Println("Initializing lol pkg")
 
-	ins := LOL{}
-
 	if len(key) == 0 {
-		return ins, fmt.Errorf("Riot Games API key not found")
+		return LOL{}, fmt.Errorf("Riot Games API key not found")
 	}
-	ins.RiotGamesAPIKey = key
-	ins.UserInfos = GetUsers()
 
-	return ins, nil
+	return LOL{
+		RiotGamesAPIKey: key,
+		UserInfos: GetUsers(),
+	}, nil
+}
+
+func (l *LOL) Update() error {
+	fetcher, err := NewFetcher(l.RiotGamesAPIKey)
+	if err != nil {
+		return err
+	}
+
+	// 1. static data
+	staticChampionData, err := fetcher.FetchStaticChampionData()
+	if err != nil {
+		return err
+	}
+	//UpsertStaticChampionData(staticChampionData)
+	l.Champions = staticChampionData.Data
+
+	// TODO: game modes
+
+	// 2. summoner
+	summonersData, err := fetcher.FetchSummoners()
+	if err != nil {
+		return err
+	}
+
+	err = UpsertSummoners(summonersData)
+	if err != nil {
+		return err
+	}
+
+	// 3. matchlists
+
+
+
+
+	return nil
 }
 
 // GetResponse is the main outward facing function to generate response
-func (l *LOL) GetResponse(username string, txt string) (string, error) {
+func (l *LOL) GetResponse(chatID int64, username string, txt string) (string, error) {
+
 	// parse out time/location keywords and process any time offsets
 	_, err := l.parse(txt)
 	if err != nil {

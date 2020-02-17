@@ -3,8 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/GwangGwang/ganeungbot/internal/pkg/db"
-	"github.com/GwangGwang/ganeungbot/pkg/lolScraper"
-	"log"
+	"github.com/GwangGwang/ganeungbot/pkg/lol"
 )
 
 const (
@@ -12,9 +11,20 @@ const (
 	hii
 )
 
+/*
+assumption: chatgroup / users collections already pre-populated
+1. fetch summoner infos - upsert if necessary
+2. for each summoner, fetch matchlist
+3. reformat matchlist and upload
+  gather match ids mid-way
+4. fetch matches
+5. reformat matches in neat format
+
+
+
+ */
+
 func main() {
-
-
 //	fmt.Println("connecting to mongo")
 	_ = db.ConnectDB()
 
@@ -25,23 +35,23 @@ func main() {
 //	fmt.Println("connected to mongo!")
 //
 //
-	lol, err := lolScraper.New("RGAPI-d3835662-5735-4c5a-9140-2589b1689f9f")
+	lolObj, err := lol.New(key)
 	if err != nil {
 		panic(err)
 	}
 
-	log.Printf("%+v", lol.UserInfos)
-
-
+	err = lolObj.Update()
 	if err != nil {
 		panic(err)
 	}
-//
-//	//lol.UpdateStaticChampionData()
-//
-//	wha := fmt.Sprintf("%sblahblah%d", "bleh")
-//	fmt.Println(wha)
-//
-//	fmt.Printf(wha, 12)
 
 }
+
+/*
+{ "_id" : ObjectId("5e0fa3aeac2eacbefaa43dbb"), "humanname" : "광승", "username" : "gwanggwang", "summonerNames" : [ "GwangGwang", "KwangKwang", "KimGwangGwang" ] }
+{ "_id" : ObjectId("5e0fa4afac2eacbefaa43dbc"), "humanname" : "영하", "username" : "younghaan", "summonerNames" : [ "0ha", "1ha", "looc", "3ha", "5ha" ] }
+{ "_id" : ObjectId("5e0fa4e7ac2eacbefaa43dbd"), "humanname" : "은국", "username" : "silversoup", "summonerNames" : [ "SilverSoup" ] }
+{ "_id" : ObjectId("5e0fa4faac2eacbefaa43dbe"), "humanname" : "소라", "username" : "", "summonerNames" : [ "Laya Yi" ] }
+{ "_id" : ObjectId("5e0fa4ffac2eacbefaa43dbf"), "humanname" : "형주", "username" : "appiejam", "summonerNames" : [ "appiejam", "LoveHeals", "LoveEndures" ] }
+{ "_id" : ObjectId("5e0fa503ac2eacbefaa43dc0"), "humanname" : "찬주", "username" : "chanjook", "summonerNames" : [ "cj2da" ] }
+ */

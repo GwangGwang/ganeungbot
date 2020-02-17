@@ -2,6 +2,7 @@ package lol
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -83,11 +84,11 @@ func (l *LOL) parse(txt string) (parseResult, error) {
 				return handleError(errMultipleGameModeKeyword)
 			}
 			result.gameMode = mode
-		} else if champ := extractChampion(word); champ.id != -1 {
-			if result.championId != 0 {
+		} else if champ := l.extractChampion(word); champ.Id != "" {
+			if result.championId != "" {
 				return handleError(errMultipleChampionKeyword)
 			}
-			result.championId = champ.id
+			result.championId = champ.Id
 		} else {
 			return handleError(errUnknownKeyword)
 		}
@@ -109,16 +110,15 @@ func extractGameMode(word string) gameMode {
 	return gameModeNone
 }
 
-func extractChampion(word string) championInfo {
-	for _, champInfo := range champions {
-		for _, matcher := range champInfo.matchers {
-			if word == matcher {
-				return champInfo
-			}
+func (l *LOL) extractChampion(word string) ChampionInfo {
+	for champName, chInfo := range l.Champions {
+		match, _ := regexp.MatchString(champName, word)
+		if match {
+			return chInfo
 		}
 	}
 
-	return championNil
+	return ChampionInfo{}
 }
 
 func (l *LOL) parseSubject(words []string) (target, []string) {

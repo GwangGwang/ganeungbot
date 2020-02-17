@@ -4,7 +4,7 @@ type parseResult struct {
 	target target      // mandatory; whose stats? (ign, person, 'all')
 	gameMode gameMode  // mandatory; game mode (aram, normal, etc.)
 	isBestStats bool   // optional; best stats?
-	championId int     // optional; which champion?
+	championId string     // optional; which champion?
 }
 
 type target struct {
@@ -43,27 +43,7 @@ var queues = []queue{
 	{gameMode: gameModeBot, queueIds: []int{7, 31, 32, 33, 830, 840, 850}, matchers: []string{"ai", "bot", "bots", "봇", "봇겜", "봇전"}},
 }
 
-type championInfo struct {
-	id int
-	name string
-	matchers []string
-}
-
-var champions = []championInfo {
-	{id: 89, name: "Leona", matchers: []string{"레오나"}},
-}
-
-var championNil = championInfo{
-	id: -1, name: "",
-}
-
-type UserInfo struct {
-	HumanName string `json:"humanname"`
-	UserName string `json:"username"`
-	SummonerNames []string `json:"summonerNames" bson:"summonerNames"`
-}
-
-type ChampionData struct {
+type ChampionDataRaw struct {
 	Version string `json:"version"`
 	Data map[string]ChampionInfo `json:"data"`
 }
@@ -75,7 +55,19 @@ type ChampionInfo struct {
 	Tags []string `json:"tags"` // TODO: make into tag object
 }
 
-type SummonerInfo struct {
+type ChatGroup struct {
+	ChatID int64 `json:"chatID"`
+	Users []string `json:"users" bson:"users"`
+	// TODO: avg, best
+}
+
+type User struct {
+	UserName string `json:"username"`
+	HumanName string `json:"humanname"`
+	SummonerNames []string `json:"summonerNames" bson:"summonerNames"`
+}
+
+type Summoner struct {
 	Name string `json:"name"`
 	Level int `json:"summonerLevel"`
 	RevisionDate int64 `json:"revisionDate"`

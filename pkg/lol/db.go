@@ -12,12 +12,11 @@ const (
 )
 
 /* STATIC DATA */
-func GetUsers() []UserInfo {
+func GetUsers() []User {
 	sessionCopy := db.Session.Copy()
 	defer sessionCopy.Close()
 
-
-	var userInfos []UserInfo
+	var userInfos []User
 	err := sessionCopy.DB(lolDatabase).C("users").Find(bson.M{}).All(&userInfos)
 	if err != nil {
 		log.Printf(err.Error())
@@ -27,24 +26,25 @@ func GetUsers() []UserInfo {
 	return userInfos
 }
 
-
-func UpsertSummonerInfo(summonerInfo SummonerInfo) error {
+func UpsertSummoners(summoners []Summoner) error {
 	sessionCopy := db.Session.Copy()
 	defer sessionCopy.Close()
 
-	query := bson.M{
-		"id": summonerInfo.Id,
-	}
+	for _, summonerInfo := range summoners {
+		query := bson.M{
+			"id": summonerInfo.Id,
+		}
 
-	_, err := sessionCopy.DB(lolDatabase).C("summonerInfo").Upsert(query, summonerInfo)
-	if err != nil {
-		return err
+		_, err := sessionCopy.DB(lolDatabase).C("summoners").Upsert(query, summonerInfo)
+			if err != nil{
+			return err
+		}
 	}
 
 	return nil
 }
 
-func UpsertMatchlist(summonerInfo SummonerInfo) error {
+func UpsertMatchlist(summonerInfo Summoner) error {
 	sessionCopy := db.Session.Copy()
 	defer sessionCopy.Close()
 
@@ -52,7 +52,7 @@ func UpsertMatchlist(summonerInfo SummonerInfo) error {
 		"id": summonerInfo.Id,
 	}
 
-	_, err := sessionCopy.DB(lolDatabase).C("summonerInfo").Upsert(query, summonerInfo)
+	_, err := sessionCopy.DB(lolDatabase).C("summoners").Upsert(query, summonerInfo)
 	if err != nil {
 		return err
 	}
@@ -62,18 +62,20 @@ func UpsertMatchlist(summonerInfo SummonerInfo) error {
 
 /* Static Data */
 
-func UpsertStaticChampionInfo(chinfo ChampionInfo) {
+func UpsertStaticChampionData(chdata ChampionDataRaw) {
 	sessionCopy := db.Session.Copy()
 	defer sessionCopy.Close()
 
-	query := bson.M{
-		"name": chinfo.Id,
-	}
+	for _, chInfo := range chdata.Data {
+		query := bson.M{
+			"name": chInfo.Id,
+		}
 
-	log.Printf("inserting static data for champion %s\n", chinfo.Id)
-	_, err := sessionCopy.DB(lolDatabase).C("championInfo").Upsert(query, chinfo)
-	if err != nil {
-		log.Printf(err.Error())
+		log.Printf("inserting static data for champion %s\n", chInfo.Id)
+		_, err := sessionCopy.DB(lolDatabase).C("champions").Upsert(query, chInfo)
+		if err != nil {
+			log.Printf(err.Error())
+		}
 	}
 }
 
