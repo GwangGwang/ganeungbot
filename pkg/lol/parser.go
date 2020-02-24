@@ -34,6 +34,9 @@ const (
  * (optional) champion
 
  [Target] [GameMode] (champion) (best) 전적/stats
+ ex) 유저 노멀 루시안 전적
+     전체 아람 전적
+     전체 랭크 최고 전적
 
 need collections:
  - user to igns relations
@@ -90,7 +93,7 @@ func (l *LOL) parse(txt string) (parseResult, error) {
 			}
 			result.championId = champ.Id
 		} else {
-			return handleError(errUnknownKeyword)
+			return handleError(errUnknownKeyword + " " + word)
 		}
 	}
 
@@ -111,16 +114,19 @@ func extractGameMode(word string) gameMode {
 }
 
 func (l *LOL) extractChampion(word string) ChampionInfo {
-	for champName, chInfo := range l.Champions {
-		match, _ := regexp.MatchString(champName, word)
-		if match {
-			return chInfo
+	for _, chInfo := range l.Champions {
+		for _, matcher := range chInfo.Matchers {
+			match, _ := regexp.MatchString(matcher, word)
+			if match {
+				return chInfo
+			}
 		}
 	}
 
 	return ChampionInfo{}
 }
 
+// returns target found and words left after parsing out the target
 func (l *LOL) parseSubject(words []string) (target, []string) {
 	// TODO: should add defaulting to querying user if no target found
 

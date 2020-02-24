@@ -48,11 +48,16 @@ type ChampionDataRaw struct {
 	Data map[string]ChampionInfo `json:"data"`
 }
 
+// Static champion info
+// Base data comes from en_US api call
+// Other language names and nicknames and such are populated under matches
+// TODO: figure out a decent way to populate nicknames
 type ChampionInfo struct {
 	Id string `json:"id"`
 	Key string `json:"key"`
 	Name string `json:"name"`
-	Tags []string `json:"tags"` // TODO: make into tag object
+	Matchers []string `json:"matchers" bson:"matchers"`
+	Tags []string `json:"tags" bson:"tags"` // TODO: make into tag object
 }
 
 type ChatGroup struct {
@@ -70,7 +75,7 @@ type User struct {
 type Summoner struct {
 	Name string `json:"name"`
 	Level int `json:"summonerLevel"`
-	RevisionDate int64 `json:"revisionDate"`
+	RevisionDate int64 `json:"revisionDate" bson:"revisionDate"`
 	Id string `json:"id"`
 	AccountId string `json:"accountId"`
 }

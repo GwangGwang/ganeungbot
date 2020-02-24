@@ -7,12 +7,21 @@ import (
 	"log"
 )
 
-type LOL struct {
-	RiotGamesAPIKey string
-	UserInfoMap map[int64]string
-	UserInfos []User
-	Champions map[string]ChampionInfo
-}
+type (
+	LOL struct {
+		RiotGamesAPIKey string
+		UserInfos []User
+		Champions []ChampionInfo
+	}
+
+	queryKey struct {
+		target targetCategory
+		mode gameMode
+
+
+	}
+)
+
 
 // New initializes and returns a new weather pkg Weather
 func New(key string) (LOL, error) {
@@ -35,29 +44,67 @@ func (l *LOL) Update() error {
 	}
 
 	// 1. static data
-	staticChampionData, err := fetcher.FetchStaticChampionData()
-	if err != nil {
-		return err
-	}
+	//staticChampionData, err := fetcher.FetchStaticChampionData()
+	//if err != nil {
+	//	return err
+	//}
 	//UpsertStaticChampionData(staticChampionData)
-	l.Champions = staticChampionData.Data
+	//l.Champions = staticChampionData.Data
 
 	// TODO: game modes
 
 	// 2. summoner
-	summonersData, err := fetcher.FetchSummoners()
+	summoners, err := fetcher.FetchSummoners()
 	if err != nil {
 		return err
 	}
 
-	err = UpsertSummoners(summonersData)
+	err = UpsertSummoners(summoners)
 	if err != nil {
 		return err
 	}
 
-	// 3. matchlists
+	// 3. get matchlists and prepare list of game ids needed to fetch
+	// TODO: maybe this map can be map[int64][]string with []string being list of summIds of interest?
+	gameIds := make(map[int64]bool)
+	for _, summoner := range summoners {
+		matchlistRaw, err := fetcher.FetchMatchListRaw(summoner)
+		if err != nil {
+			return err
+		}
+		err = UpsertMatchlistRaw(matchlistRaw)
+		if err != nil {
+			return err
+		}
 
+		for _, matchRef := range matchlistRaw.MatchReferencesRaw {
+			gameIds[matchRef.GameId] = true
+		}
+	}
 
+	// 4. get/fetch matches
+	matchMap := make(map[int64]MatchRaw)
+	log.Printf("fetching total of %d matches\n", len(gameIds))
+	for gameId, _ := range gameIds {
+		// get match data from either db or url
+		matchRaw, err := GetMatchRaw(gameId)
+		if err != nil {
+			log.Printf("match '%d' not found in db; fetching from url\n", gameId)
+			matchRaw, err := fetcher.FetchMatch(gameId)
+			if err != nil {
+				return err
+			}
+			err = UpsertMatchRaw(matchRaw)
+			if err != nil {
+				return err
+			}
+		}
+
+		// process match data
+		matchMap[gameId] = matchRaw
+	}
+
+	// 5. process match data per user/ign/queue combination
 
 
 	return nil

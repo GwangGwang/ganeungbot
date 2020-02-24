@@ -11,14 +11,14 @@ func TestParse(t *testing.T) {
 
 		// input
 		in    string // make sure to append '전적' afterwards
-		newChamp championInfo
+		newChamp ChampionInfo
 
 		// output
 		expTargetCategory targetCategory
 		expTargetName string
 		expGameMode gameMode
 		expBestStats bool
-		expChampionId int
+		expChampionId string
 		expErrStr string // always checked explicitly
 	}{
 		{name: "all aram stats",
@@ -44,19 +44,19 @@ func TestParse(t *testing.T) {
 		},
 		{name: "game mode + champion",
 			in:    "전체 아람 우왕",
-			newChamp: championInfo{id: 1337, name: "blah", matchers: []string{"우왕"}},
+			newChamp: ChampionInfo{Id: "1337", Name: "blah", Matchers: []string{"우왕"}},
 			expTargetCategory: categoryAll,
 			expTargetName: "전체",
 			expGameMode: gameModeAram,
-			expChampionId: 1337,
+			expChampionId: "1337",
 		},
 		{name: "game mode + champion + best",
 			in:    "전체 아람 우왕 최고",
-			newChamp: championInfo{id: 1337, name: "blah", matchers: []string{"우왕"}},
+			newChamp: ChampionInfo{Id: "1337", Name: "blah", Matchers: []string{"우왕"}},
 			expTargetCategory: categoryAll,
 			expTargetName: "전체",
 			expGameMode: gameModeAram,
-			expChampionId: 1337,
+			expChampionId: "1337",
 			expBestStats: true,
 		},
 		{name: "more than 1 gamemode",
@@ -69,25 +69,27 @@ func TestParse(t *testing.T) {
 		},
 		{name: "more than 1 champion",
 			in:    "전체 우왕 아람 우왕",
-			newChamp: championInfo{id: 1337, name: "blah", matchers: []string{"우왕"}},
+			newChamp: ChampionInfo{Id: "1337", Name: "blah", Matchers: []string{"우왕"}},
 			expErrStr: errMultipleChampionKeyword,
 		},
 		{name: "extra unknown words",
 			in:    "전체 최고 아람 우왕 바보",
-			newChamp: championInfo{id: 1337, name: "blah", matchers: []string{"우왕"}},
+			newChamp: ChampionInfo{Id: "1337", Name: "blah", Matchers: []string{"우왕"}},
 			expErrStr: errUnknownKeyword,
 		},
 	}
 
+	l := LOL{}
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// SETUP
-			if test.newChamp.id != 0  {
-				champions = append(champions, test.newChamp)
+			if test.newChamp.Id != ""  {
+				l.Champions = append(l.Champions, test.newChamp)
 			}
 
 			// EXECUTE
-			pr, err := parse(test.in + " 전적")
+			pr, err := l.parse(test.in + " 전적")
 
 			// VERIFY
 			if test.expErrStr == "" {
@@ -108,7 +110,7 @@ func TestParse(t *testing.T) {
 						t.Errorf("expected isBestStats to be '%t' but got '%t'", test.expBestStats, pr.isBestStats)
 					}
 					if test.expChampionId != pr.championId {
-						t.Errorf("expected championId to be '%d' but got '%d'", test.expChampionId, pr.championId)
+						t.Errorf("expected championId to be '%s' but got '%s'", test.expChampionId, pr.championId)
 					}
 
 				}
@@ -127,7 +129,7 @@ func TestParseTarget(t *testing.T) {
 
 		// input
 		in    string
-		newUser map[string]userinfo
+		newUser map[string]User
 
 		// output
 		targetCategory targetCategory
@@ -166,8 +168,8 @@ func TestParseTarget(t *testing.T) {
 		},
 		{name: "multi word username",
 			in:    "im gosu 아람 루시안",
-			newUser: map[string]userinfo{
-				"im gosu": {igns: []string{"what"}},
+			newUser: map[string]User{
+				"im gosu": {SummonerNames: []string{"what"}},
 			},
 			targetCategory: categoryUser,
 			targetName: "im gosu",
@@ -175,8 +177,8 @@ func TestParseTarget(t *testing.T) {
 		},
 		{name: "multi word ign",
 			in:    "what the 아람 루시안",
-			newUser: map[string]userinfo{
-				"im gosu": {igns: []string{"what the"}},
+			newUser: map[string]User{
+				"im gosu": {SummonerNames: []string{"what the"}},
 			},
 			targetCategory: categoryIgn,
 			targetName: "what the",
@@ -187,14 +189,17 @@ func TestParseTarget(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// SETUP
+			l := LOL{
+				UserInfos: make([]User, 0),
+			}
 			if test.newUser != nil {
-				for name, info := range test.newUser {
-					usermap[name] = info
+				for _, info := range test.newUser {
+					l.UserInfos = append(l.UserInfos, info)
 				}
 			}
 
 			// EXECUTE
-			actualTarget, actualWords := parseTarget(strings.Split(test.in, " "))
+			actualTarget, actualWords := l.parseSubject(strings.Split(test.in, " "))
 
 			// VERIFY
 			// target

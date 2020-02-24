@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	urlBase = "https://na1.api.riotgames.com/lol/%s?api_key=%s"
+	urlBase = "https://na1.api.riotgames.com/lol/%sapi_key=%s"
 
 	// in seconds
 	retryMinor = 1 // 20 requests per second
@@ -40,7 +40,7 @@ func NewFetcher(key string) (Fetcher, error) {
 }
 
 func (l *Fetcher) FetchSummoners() ([]Summoner, error) {
-	reqUrl := fmt.Sprintf(urlBase, "summoner/v4/summoners/by-name/%s", l.RiotGamesAPIKey)
+	reqUrl := fmt.Sprintf(urlBase, "summoner/v4/summoners/by-name/%s?", l.RiotGamesAPIKey)
 
 	userInfos := GetUsers()
 
@@ -70,7 +70,7 @@ func (l *Fetcher) FetchSummoners() ([]Summoner, error) {
 	return summoners, nil
 }
 
-func (l *Fetcher) FetchFullMatchList(summonerInfo Summoner) ([]MatchReferenceRaw, error) {
+func (l *Fetcher) FetchMatchListRaw(summonerInfo Summoner) (MatchlistRaw, error) {
 	/*
 	  Two problems with matchlists
 	  - Only up to 100 returned per query
@@ -80,7 +80,7 @@ func (l *Fetcher) FetchFullMatchList(summonerInfo Summoner) ([]MatchReferenceRaw
 	summonerName := summonerInfo.Name
 
 	subDomain := fmt.Sprintf("match/v4/matchlists/by-account/%s", summonerInfo.AccountId)
-	subDomain += "?beginIndex=%d" // will be updated iteratively
+	subDomain += "?beginIndex=%d&" // will be updated iteratively
 
 	// complete url without beginIndex filled yet
 	reqUrl := fmt.Sprintf(urlBase, subDomain, l.RiotGamesAPIKey)
@@ -94,13 +94,13 @@ func (l *Fetcher) FetchFullMatchList(summonerInfo Summoner) ([]MatchReferenceRaw
 		log.Printf("url: %s", url)
 		body, err := getWithRetry(url)
 		if err != nil {
-			return []MatchReferenceRaw{}, fmt.Errorf("error while retrieving matchlist for summoner '%s': %s", summonerName, err)
+			return MatchlistRaw{}, fmt.Errorf("error while retrieving matchlist for summoner '%s': %s", summonerName, err)
 		}
 
 		var matchlistRaw MatchlistRaw
 		err = json.Unmarshal(body, &matchlistRaw)
 		if err != nil {
-			return []MatchReferenceRaw{}, fmt.Errorf("error while unmarshaling matchlist for summoner '%s': %s", summonerName, err)
+			return MatchlistRaw{}, fmt.Errorf("error while unmarshaling matchlist for summoner '%s': %s", summonerName, err)
 		}
 
 		allMatchReferences = append(allMatchReferences, matchlistRaw.MatchReferencesRaw...)
@@ -118,9 +118,31 @@ func (l *Fetcher) FetchFullMatchList(summonerInfo Summoner) ([]MatchReferenceRaw
 		}
 	}
 
-	return allMatchReferences, nil
+	return MatchlistRaw{
+		SummonerName: summonerInfo.Name,
+		MatchReferencesRaw: allMatchReferences,
+	}, nil
 }
 
+func (l *Fetcher) FetchMatch(gameId int64) (MatchRaw, error) {
+	subDomain := fmt.Sprintf("match/v4/matches/%d?", gameId)
+	url := fmt.Sprintf(urlBase, subDomain, l.RiotGamesAPIKey)
+
+	log.Printf("retrieving match id '%d'\n", gameId)
+	log.Printf("url: %s\n", url)
+	body, err := getWithRetry(url)
+	if err != nil {
+		return MatchRaw{}, fmt.Errorf("error while retrieving match id '%d'", gameId)
+	}
+
+	var matchRaw MatchRaw
+	err = json.Unmarshal(body, &matchRaw)
+	if err != nil {
+		return MatchRaw{}, fmt.Errorf("error while unmarshaling match id '%d'", gameId)
+	}
+
+	return matchRaw, nil
+}
 
 /* STATIC DATA */
 func (l *Fetcher) FetchStaticChampionData() (ChampionDataRaw, error) {
@@ -140,6 +162,26 @@ func (l *Fetcher) FetchStaticChampionData() (ChampionDataRaw, error) {
 
 	return chdata, nil
 }
+
+/*
+func (l *Fetcher) FetchStaticQueueData() (QueueDataRaw, error) {
+	url := "http://static.developer.riotgames.com/docs/lol/queues.json"
+	resp, err := http.Get(url)
+	if err != nil {
+		return QueueDataRaw{}, fmt.Errorf("error while retrieving queue data: %s", err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	var queueData QueueDataRaw
+	err = json.Unmarshal(body, &chdata)
+	if err != nil {
+		return QueueDataRaw{}, fmt.Errorf("error while unmarshalling queue data json body: %s", err)
+	}
+
+	return queueData, nil
+}
+*/
 
 /* HELPERS */
 
