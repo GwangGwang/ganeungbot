@@ -23,6 +23,7 @@ type MatchReferenceRaw struct {
 	PlatformId string `json:"platformId"`
 	Season     int    `json:"season"`
 	QueueId    int    `json:"queue"`
+	SummonerName string // only used internally
 }
 
 type MatchRaw struct {

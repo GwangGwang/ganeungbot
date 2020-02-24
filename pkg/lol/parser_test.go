@@ -96,7 +96,7 @@ func TestParse(t *testing.T) {
 				if err != nil {
 					t.Errorf("expected no error but got '%s'", err.Error())
 				} else {
-					// parseResult
+					// queryKey
 					if test.expTargetCategory != categoryNone && pr.target.category != test.expTargetCategory {
 						t.Errorf("expected target category '%d' but got '%d'", test.expTargetCategory, pr.target.category)
 					}

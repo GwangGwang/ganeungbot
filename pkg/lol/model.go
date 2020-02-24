@@ -1,10 +1,16 @@
 package lol
 
-type parseResult struct {
+type queryKey struct {
 	target target      // mandatory; whose stats? (ign, person, 'all')
 	gameMode gameMode  // mandatory; game mode (aram, normal, etc.)
 	isBestStats bool   // optional; best stats?
-	championId string     // optional; which champion?
+	championId string  // optional; which champion?
+}
+
+// aggregated data
+type aggData struct {
+	data map[string]float64
+	resp string
 }
 
 type target struct {
@@ -39,9 +45,23 @@ var queues = []queue{
 	{gameMode: gameModeAram, queueIds: []int{65, 100, 450}, matchers: []string{"aram", "아람", "칼바람"}},
 	{gameMode: gameModeNormal, queueIds: []int{2, 400, 430}, matchers: []string{"normal", "노멀", "노말", "일반"}},
 	{gameMode: gameModeRanked, queueIds: []int{4, 6, 410, 420, 440}, matchers: []string{"ranked", "rank", "랭", "랭크", "솔랭"}},
-	{gameMode: gameModeRift, queueIds: []int{2, 4, 6, 400, 410, 420, 430, 440}, matchers: []string{"rift", "협곡"}},
+//	{gameMode: gameModeRift, queueIds: []int{2, 4, 6, 400, 410, 420, 430, 440}, matchers: []string{"rift", "협곡"}},
 	{gameMode: gameModeBot, queueIds: []int{7, 31, 32, 33, 830, 840, 850}, matchers: []string{"ai", "bot", "bots", "봇", "봇겜", "봇전"}},
 }
+
+func getQueueFromId(id int) gameMode {
+	for _, queue := range queues {
+		for _, queueId := range queue.queueIds {
+			if queueId == id {
+				return queue.gameMode
+			}
+		}
+	}
+
+	return gameModeNone
+}
+
+
 
 type ChampionDataRaw struct {
 	Version string `json:"version"`
@@ -67,9 +87,21 @@ type ChatGroup struct {
 }
 
 type User struct {
-	UserName string `json:"username"`
-	HumanName string `json:"humanname"`
+	UserName string `json:"username" bson:"username"`
+	HumanName string `json:"humanname" bson:"humanname"`
 	SummonerNames []string `json:"summonerNames" bson:"summonerNames"`
+}
+
+func getUserFromSummoner(users []User, inputSummName string) string {
+	for _, user := range users {
+		for _, summName := range user.SummonerNames {
+			if summName == inputSummName {
+				return user.UserName
+			}
+		}
+	}
+
+	return ""
 }
 
 type Summoner struct {
@@ -78,27 +110,5 @@ type Summoner struct {
 	RevisionDate int64 `json:"revisionDate" bson:"revisionDate"`
 	Id string `json:"id"`
 	AccountId string `json:"accountId"`
-}
-
-type MatchReference struct {
-	Timestamp int64 `json:"timestamp"`
-	GameId int64 `json:"gameId"`
-	ChampionId int `json:"champion"`
-	PlatformId string `json:"platformId"`
-	Season int `json:"season"`
-	QueueId int `json:"queue"` // index
-}
-
-type Queue struct {
-	Name     string
-	QueueIds []int
-	Matchers []string
-}
-
-var Queues = []Queue{
-	{Name: "ARAM", QueueIds: []int{65, 100, 450}, Matchers: []string{"aram", "아람", "칼바람"}},
-	{Name: "Normal", QueueIds: []int{2, 400, 430}, Matchers: []string{"normal", "노멀", "노말", "협곡"}},
-	{Name: "Ranked", QueueIds: []int{4, 6, 410, 420, 440}, Matchers: []string{"ranked", "rank", "랭", "랭크"}},
-	{Name: "AI", QueueIds: []int{7, 31, 32, 33, 830, 840, 850}, Matchers: []string{"ai", "bot", "봇", "봇겜", "봇전"}},
 }
 

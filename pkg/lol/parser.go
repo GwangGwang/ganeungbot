@@ -45,16 +45,16 @@ need collections:
 
 /* parse out time keywords and location phrase to be used in geocoding/forecast apis
  @param txt string   : the string to parse
- @return parseResult : object encapsulating query results
+ @return queryKey : object encapsulating query results
  @return error       : error; should be nil for valid query
 */
-func (l *LOL) parse(txt string) (parseResult, error) {
+func (l *LOL) parse(txt string) (queryKey, error) {
 	// anonymous helper function for error returning
-	handleError := func(errMsg string) (parseResult, error) {
-		return parseResult{}, getError(errMsg)
+	handleError := func(errMsg string) (queryKey, error) {
+		return queryKey{}, getError(errMsg)
 	}
 
-	result := parseResult{}
+	result := queryKey{}
 
 	// split request string into words
 	words := strings.Split(txt, " ")

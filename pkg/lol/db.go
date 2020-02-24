@@ -79,6 +79,22 @@ func UpsertMatchRaw(match MatchRaw) error {
 	return nil
 }
 
+func GetMatchlistRaw(summoner Summoner) (MatchlistRaw, error) {
+	sessionCopy := db.Session.Copy()
+	defer sessionCopy.Close()
+
+	query := bson.M{
+		"summonerName": summoner.Name,
+	}
+
+	var matchlist MatchlistRaw
+	if err := sessionCopy.DB(lolDatabase).C("matchlistRaw").Find(query); err != nil {
+		return matchlist, err
+	}
+
+	return matchlist, nil
+}
+
 func GetMatchRaw(gameId int64) (MatchRaw, error) {
 	sessionCopy := db.Session.Copy()
 	defer sessionCopy.Close()

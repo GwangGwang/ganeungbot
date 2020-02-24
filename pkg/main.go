@@ -35,6 +35,7 @@ func main() {
 //	fmt.Println("connected to mongo!")
 //
 //
+	key := "RGAPI-0acaf874-ffce-45fa-9a1f-696a8351a680"
 	lolObj, err := lol.New(key)
 	if err != nil {
 		panic(err)
