@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"time"
 )
 
 const (
@@ -70,7 +69,7 @@ func (l *Fetcher) FetchSummoners() ([]Summoner, error) {
 	return summoners, nil
 }
 
-func (l *Fetcher) FetchMatchListRaw(summonerInfo Summoner) (MatchlistRaw, error) {
+func (l *Fetcher) FetchMatchList(summonerInfo Summoner) (Matchlist, error) {
 	/*
 	  Two problems with matchlists
 	  - Only up to 100 returned per query
@@ -86,7 +85,7 @@ func (l *Fetcher) FetchMatchListRaw(summonerInfo Summoner) (MatchlistRaw, error)
 	reqUrl := fmt.Sprintf(urlBase, subDomain, l.RiotGamesAPIKey)
 	beginIndex := 0
 	totalGames := 0
-	var allMatchReferences []MatchReferenceRaw
+	var allMatchReferences []MatchReference
 
 	for {
 		log.Printf("retrieving matchlist for summoner '%s'; beginIndex %d", summonerName, beginIndex)
@@ -94,19 +93,19 @@ func (l *Fetcher) FetchMatchListRaw(summonerInfo Summoner) (MatchlistRaw, error)
 		log.Printf("url: %s", url)
 		body, err := getWithRetry(url)
 		if err != nil {
-			return MatchlistRaw{}, fmt.Errorf("error while retrieving matchlist for summoner '%s': %s", summonerName, err)
+			return Matchlist{}, fmt.Errorf("error while retrieving matchlist for summoner '%s': %s", summonerName, err)
 		}
 
-		var matchlistRaw MatchlistRaw
-		err = json.Unmarshal(body, &matchlistRaw)
+		var matchlist Matchlist
+		err = json.Unmarshal(body, &matchlist)
 		if err != nil {
-			return MatchlistRaw{}, fmt.Errorf("error while unmarshaling matchlist for summoner '%s': %s", summonerName, err)
+			return Matchlist{}, fmt.Errorf("error while unmarshaling matchlist for summoner '%s': %s", summonerName, err)
 		}
 
-		allMatchReferences = append(allMatchReferences, matchlistRaw.MatchReferencesRaw...)
+		allMatchReferences = append(allMatchReferences, matchlist.MatchReferences...)
 
 		// break condition
-		totalGames = matchlistRaw.TotalGames
+		totalGames = matchlist.TotalGames
 		log.Printf("total games count according to this batch: %d\n", totalGames)
 		if len(allMatchReferences) < totalGames {
 			// should retrieve next (max) 100 games
@@ -118,13 +117,13 @@ func (l *Fetcher) FetchMatchListRaw(summonerInfo Summoner) (MatchlistRaw, error)
 		}
 	}
 
-	return MatchlistRaw{
-		SummonerName: summonerInfo.Name,
-		MatchReferencesRaw: allMatchReferences,
+	return Matchlist{
+		SummonerName:    summonerInfo.Name,
+		MatchReferences: allMatchReferences,
 	}, nil
 }
 
-func (l *Fetcher) FetchMatch(gameId int64) (MatchRaw, error) {
+func (l *Fetcher) FetchMatch(gameId int64) (Match, error) {
 	subDomain := fmt.Sprintf("match/v4/matches/%d?", gameId)
 	url := fmt.Sprintf(urlBase, subDomain, l.RiotGamesAPIKey)
 
@@ -132,51 +131,51 @@ func (l *Fetcher) FetchMatch(gameId int64) (MatchRaw, error) {
 	log.Printf("url: %s\n", url)
 	body, err := getWithRetry(url)
 	if err != nil {
-		return MatchRaw{}, fmt.Errorf("error while retrieving match id '%d'", gameId)
+		return Match{}, fmt.Errorf("error while retrieving match id '%d'", gameId)
 	}
 
-	var matchRaw MatchRaw
-	err = json.Unmarshal(body, &matchRaw)
+	var match Match
+	err = json.Unmarshal(body, &match)
 	if err != nil {
-		return MatchRaw{}, fmt.Errorf("error while unmarshaling match id '%d'", gameId)
+		return Match{}, fmt.Errorf("error while unmarshaling match id '%d'", gameId)
 	}
 
-	return matchRaw, nil
+	return match, nil
 }
 
 /* STATIC DATA */
-func (l *Fetcher) FetchStaticChampionData() (ChampionDataRaw, error) {
+func (l *Fetcher) FetchStaticChampionData() (ChampionData, error) {
 	url := "http://ddragon.leagueoflegends.com/cdn/9.24.2/data/en_US/champion.json"
 	resp, err := http.Get(url)
 	if err != nil {
-		return ChampionDataRaw{}, fmt.Errorf("error while retrieving champion data: %s", err)
+		return ChampionData{}, fmt.Errorf("error while retrieving champion data: %s", err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
-	var chdata ChampionDataRaw
+	var chdata ChampionData
 	err = json.Unmarshal(body, &chdata)
 	if err != nil {
-		return ChampionDataRaw{}, fmt.Errorf("error while unmarshalling champion data json body: %s", err)
+		return ChampionData{}, fmt.Errorf("error while unmarshalling champion data json body: %s", err)
 	}
 
 	return chdata, nil
 }
 
 /*
-func (l *Fetcher) FetchStaticQueueData() (QueueDataRaw, error) {
+func (l *Fetcher) FetchStaticQueueData() (QueueData, error) {
 	url := "http://static.developer.riotgames.com/docs/lol/queues.json"
 	resp, err := http.Get(url)
 	if err != nil {
-		return QueueDataRaw{}, fmt.Errorf("error while retrieving queue data: %s", err)
+		return QueueData{}, fmt.Errorf("error while retrieving queue data: %s", err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
-	var queueData QueueDataRaw
+	var queueData QueueData
 	err = json.Unmarshal(body, &chdata)
 	if err != nil {
-		return QueueDataRaw{}, fmt.Errorf("error while unmarshalling queue data json body: %s", err)
+		return QueueData{}, fmt.Errorf("error while unmarshalling queue data json body: %s", err)
 	}
 
 	return queueData, nil
@@ -184,36 +183,4 @@ func (l *Fetcher) FetchStaticQueueData() (QueueDataRaw, error) {
 */
 
 /* HELPERS */
-
-// Riot API is heavily rate-limited; wait for rate limit to be lifted and retry
-func getWithRetry(reqUrl string) ([]byte, error) {
-	retryCount := 0
-	for {
-		resp, err := http.Get(reqUrl)
-		if err != nil {
-			return nil, err
-		}
-
-		if resp.StatusCode == http.StatusTooManyRequests {
-			retryCount += 1
-			retryAmount := retryMinor
-			if retryCount >= retryEscalateCount {
-				retryCount = 0
-				retryAmount = retryMajor
-			}
-			waitRetry(retryAmount) // TODO: use retryAmount instead of hardcode
-		} else if resp.StatusCode == http.StatusOK {
-			body, err := ioutil.ReadAll(resp.Body)
-			resp.Body.Close()
-			return body, err
-		} else {
-			return nil, fmt.Errorf("non-200 response status: %s", resp.Status)
-		}
-	}
-}
-
-func waitRetry(sec int) {
-	log.Printf("rate limited; retrying in %d seconds", sec)
-	time.Sleep(time.Duration(sec) * time.Second)
-}
 

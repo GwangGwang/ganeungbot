@@ -136,7 +136,7 @@ func (l *LOL) parseSubject(words []string) (target, []string) {
 	if words[0] == "전체" {
 		result = target{
 			category: categoryAll,
-			name: "전체",
+			name: "",
 		}
 		words = words[1:]
 	} else {
@@ -153,7 +153,7 @@ func (l *LOL) parseSubject(words []string) (target, []string) {
 			if matched {
 				result = target{
 					category: categoryUser,
-					name: user,
+					name: userinfo.UserName,
 				}
 				words = words[len(userwords):]
 				break

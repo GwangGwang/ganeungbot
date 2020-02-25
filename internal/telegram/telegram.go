@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/GwangGwang/ganeungbot/pkg/mid"
-	"github.com/GwangGwang/ganeungbot/pkg/util"
+	"github.com/GwangGwang/ganeungbot/internal/mid"
+	"github.com/GwangGwang/ganeungbot/internal/util"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 

@@ -11,7 +11,7 @@ ENV LOG_FILE_DIR=${LOG_DIR}/app.log
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN go build cmd/ganeungbot/main.go
+RUN go build main.go
 EXPOSE 8080
 
 # execution

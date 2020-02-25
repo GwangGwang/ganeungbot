@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/GwangGwang/ganeungbot/internal/pkg/db"
-	"github.com/GwangGwang/ganeungbot/pkg/lol"
+	"github.com/GwangGwang/ganeungbot/internal/db"
+	"github.com/GwangGwang/ganeungbot/internal/lol"
 )
 
 const (
@@ -35,7 +35,7 @@ func main() {
 //	fmt.Println("connected to mongo!")
 //
 //
-	key := "RGAPI-0acaf874-ffce-45fa-9a1f-696a8351a680"
+key := ""
 	lolObj, err := lol.New(key)
 	if err != nil {
 		panic(err)

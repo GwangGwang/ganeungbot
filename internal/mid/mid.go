@@ -2,11 +2,11 @@ package mid
 
 import (
 	"fmt"
-	"github.com/GwangGwang/ganeungbot/pkg/lol"
-	"github.com/GwangGwang/ganeungbot/pkg/translate"
-	"github.com/GwangGwang/ganeungbot/pkg/typehelper"
-	"github.com/GwangGwang/ganeungbot/pkg/util"
-	"github.com/GwangGwang/ganeungbot/pkg/weather"
+	"github.com/GwangGwang/ganeungbot/internal/lol"
+	"github.com/GwangGwang/ganeungbot/internal/translate"
+	"github.com/GwangGwang/ganeungbot/internal/typehelper"
+	"github.com/GwangGwang/ganeungbot/internal/util"
+	"github.com/GwangGwang/ganeungbot/internal/weather"
 	"log"
 	"strings"
 )
@@ -174,9 +174,14 @@ func (m *Middleware) buildResponse(action Action, msg Msg) []string {
 			} else {
 				resps = append(resps, resp)
 			}
-		//	case ACTION_GAMESTATS:
-		//		resp = chatObj.lolStats.GetResponse(txt)
-
+		case ACTION_LOL:
+			resp, err := m.LOL.GetResponse(msg.ChatID, msg.Username, txt)
+			if err != nil {
+				log.Printf(err.Error())
+				resps = append(resps, err.Error())
+			} else {
+				resps = append(resps, resp)
+			}
 		default:
 		}
 	}

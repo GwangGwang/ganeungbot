@@ -5,7 +5,7 @@ package weather
 import (
 	"context"
 	"fmt"
-	"github.com/GwangGwang/ganeungbot/pkg/geocoding"
+	"github.com/GwangGwang/ganeungbot/internal/geocoding"
 	"log"
 	"time"
 

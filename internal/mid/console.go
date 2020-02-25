@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"os"
 
-	"github.com/GwangGwang/ganeungbot/pkg/util"
+	"github.com/GwangGwang/ganeungbot/internal/util"
 )
 
 // startConsole instantiates console and returns the channel it'd receive inputs

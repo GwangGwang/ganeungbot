@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
+	"github.com/GwangGwang/ganeungbot/internal/db"
 	"log"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/GwangGwang/ganeungbot/pkg/geocoding"
-	"github.com/GwangGwang/ganeungbot/pkg/lol"
-	"github.com/GwangGwang/ganeungbot/pkg/mid"
-	"github.com/GwangGwang/ganeungbot/pkg/telegram"
-	"github.com/GwangGwang/ganeungbot/pkg/translate"
-	"github.com/GwangGwang/ganeungbot/pkg/weather"
+	"github.com/GwangGwang/ganeungbot/internal/geocoding"
+	"github.com/GwangGwang/ganeungbot/internal/lol"
+	"github.com/GwangGwang/ganeungbot/internal/mid"
+	"github.com/GwangGwang/ganeungbot/internal/telegram"
+	"github.com/GwangGwang/ganeungbot/internal/translate"
+	"github.com/GwangGwang/ganeungbot/internal/weather"
 )
 
 const (
@@ -46,6 +47,11 @@ func main() {
 		panic(fmt.Sprintf("telegram api key not supplied under env '%s'", TelegramApiKey))
 	}
 
+	if err := db.ConnectDB(); err != nil {
+		log.Panic(err)
+		return
+	}
+
 	// Telegram API
 	receiveChan, sendChan, err := telegram.New(envs[TelegramApiKey])
 	if err != nil {
@@ -76,6 +82,7 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
+	lol.Update()
 
 	// Translate API
 	t, err := translate.New(envs[TranslateApiKey])

@@ -2,7 +2,7 @@ package mid
 
 import (
 	"fmt"
-	"github.com/GwangGwang/ganeungbot/pkg/typehelper"
+	"github.com/GwangGwang/ganeungbot/internal/typehelper"
 )
 
 type Action int
