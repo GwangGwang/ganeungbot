@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"ganeungbot/pkg/db"
+	"ganeungbot/pkg/mid"
+	"ganeungbot/pkg/riotGames"
 
 	"log"
 	"os"
@@ -9,7 +12,6 @@ import (
 	"time"
 
 	"github.com/GwangGwang/ganeungbot/pkg/geocoding"
-	"github.com/GwangGwang/ganeungbot/pkg/mid"
 	"github.com/GwangGwang/ganeungbot/pkg/telegram"
 	"github.com/GwangGwang/ganeungbot/pkg/translate"
 	"github.com/GwangGwang/ganeungbot/pkg/weather"
@@ -57,6 +59,13 @@ func main() {
 		log.Printf("Error while converting consoleChatId to int64: %s", err.Error())
 	}
 
+	// DB
+	_ = db.ConnectDB()
+
+	// Riot Games
+	key := ""
+	riotGames, err := riotGames.New(key)
+
 	// Google Geocoding API
 	geocoding, err := geocoding.New(envs[GeocodingApiKey])
 	if err != nil {
@@ -75,6 +84,6 @@ func main() {
 		log.Println(err)
 	}
 
-	middleware := mid.New(startTime, receiveChan, sendChan, consoleChatId, w, t)
+	middleware := mid.New(startTime, receiveChan, sendChan, consoleChatId, w, t, riotGames)
 	middleware.Start()
 }

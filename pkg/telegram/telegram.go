@@ -2,9 +2,9 @@ package telegram
 
 import (
 	"fmt"
+	"github.com/GwangGwang/ganeungbot/pkg/mid"
 	"log"
 
-	"github.com/GwangGwang/ganeungbot/pkg/mid"
 	"github.com/GwangGwang/ganeungbot/pkg/util"
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )

@@ -2,6 +2,7 @@ package mid
 
 import (
 	"fmt"
+	"ganeungbot/pkg/riotGames"
 	"github.com/GwangGwang/ganeungbot/pkg/translate"
 	"github.com/GwangGwang/ganeungbot/pkg/typehelper"
 	"github.com/GwangGwang/ganeungbot/pkg/util"
@@ -19,6 +20,7 @@ type (
 		SendChan      chan Msg
 		Weather       weather.Weather
 		Translate     translate.Translate
+		RiotGames     riotGames.LOL
 		ChatGroups    map[int64]ChatGroup
 	}
 
@@ -40,7 +42,7 @@ type (
 	}
 )
 
-func New(startTime int64, receiveChan chan Msg, sendChan chan Msg, consoleChatId int64, w weather.Weather, t translate.Translate) *Middleware {
+func New(startTime int64, receiveChan chan Msg, sendChan chan Msg, consoleChatId int64, w weather.Weather, t translate.Translate, rg riotGames.LOL) *Middleware {
 	return &Middleware{
 		BotStartTime: startTime,
 		ConsoleChatID: consoleChatId,
@@ -49,6 +51,7 @@ func New(startTime int64, receiveChan chan Msg, sendChan chan Msg, consoleChatId
 		Weather: w,
 		Translate: t,
 		ChatGroups: make(map[int64]ChatGroup),
+		RiotGames: rg,
 	}
 }
 
