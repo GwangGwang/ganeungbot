@@ -2,9 +2,9 @@ package riotGames
 
 import (
 	"fmt"
-	"github.com/GwangGwang/ganeungbot/pkg/db"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"ganeungbot/pkg/db"
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 	"log"
 )
 

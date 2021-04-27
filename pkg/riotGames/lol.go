@@ -192,7 +192,6 @@ func (l *LOL) Update() error {
 	// 5. pre-generate response texts
 	l.prepareResponse()
 
-
 	// Test code
 	for key, val := range l.AggStats {
 		fmt.Printf("key: %+v\n", key)
